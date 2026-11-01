@@ -22,8 +22,7 @@ A terminal-based word-guessing game developed using Python featuring an object-o
 - Tracking guessed letters and remaining attempts
 - Automated testing with Python standard `unittest`
 
-- 🌟 **[View Candidate Submission – Hangman Game](./Hangman_Internship_Submission/)**
-- 📁 [View Original Reference Task 1](./Task_1_Hangman/)
+- 🌟 **[View Task 1 – Hangman Game](./Hangman_Internship_Submission/)**
 
 ### Task 2: Stock Portfolio Tracker
 A menu-driven Python application designed to record stock transactions, validate tickers against the S&P 500 dataset, track real-time position values, calculate profit/loss, and format customer portfolios into clean ASCII tables.
@@ -36,8 +35,7 @@ A menu-driven Python application designed to record stock transactions, validate
 - Consolidated portfolio financial metrics (Total Invested, Value, P/L, Return %)
 - Automated testing with Python standard `unittest`
 
-- 🌟 **[View Candidate Submission – Stock Portfolio Tracker](./Stock_Portfolio_Submission/)**
-- 📁 [View Original Reference Task 2](./Task_2_Stock_Portfolio_Tracker/)
+- 🌟 **[View Task 2 – Stock Portfolio Tracker](./Stock_Portfolio_Submission/)**
 
 ## Skills I'm Developing
 
