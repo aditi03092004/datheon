@@ -1,0 +1,2 @@
+Customer_id,Ticker,Company_Name,Buy_price,Quantity,Investment,Current_price,Current_value,Profit_Loss,Timestamp
+STOCK_2026_EnkPqi,AAPL,Apple Inc.,150.00,10,1500.00,144.00,1440.00,-60.00,2026-11-01 20:43:40

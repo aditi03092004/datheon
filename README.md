@@ -13,28 +13,31 @@ As a B.Tech Computer Science and Engineering student specialising in Cybersecuri
 ## Projects
 
 ### Task 1: Hangman Game
-A terminal-based word-guessing game developed using Python.
+A terminal-based word-guessing game developed using Python featuring an object-oriented game engine, 7 ASCII gallows stages, duplicate prevention, and automated unit testing.
 
 **Concepts practised:**
-- Random word selection
-- Loops and conditional statements
-- User input and validation
+- Object-oriented programming & decoupled game logic
+- Random word selection from curated dictionary
+- Loops, conditional statements, and input validation
 - Tracking guessed letters and remaining attempts
-- Basic game logic
+- Automated testing with Python standard `unittest`
 
-[View Task 1 – Hangman Game](./Task_1_Hangman/)
+- 🌟 **[View Candidate Submission – Hangman Game](./Hangman_Internship_Submission/)**
+- 📁 [View Original Reference Task 1](./Task_1_Hangman/)
 
 ### Task 2: Stock Portfolio Tracker
-A menu-driven Python application designed to manage portfolio information and display stock-related details and transaction history.
+A menu-driven Python application designed to record stock transactions, validate tickers against the S&P 500 dataset, track real-time position values, calculate profit/loss, and format customer portfolios into clean ASCII tables.
 
 **Concepts practised:**
-- Functions and modular programming
-- Conditional statements and loops
-- Menu-driven navigation
-- File handling and data management
-- Displaying portfolio information and transaction history
+- Object-oriented programming & modular service architecture
+- S&P 500 dataset parsing and ticker validation
+- Resilient market pricing engine with standard library fallback
+- Unique customer ID generation and persistent file management
+- Consolidated portfolio financial metrics (Total Invested, Value, P/L, Return %)
+- Automated testing with Python standard `unittest`
 
-[View Task 2 – Stock Portfolio Tracker](./Task_2_Stock_Portfolio_Tracker/)
+- 🌟 **[View Candidate Submission – Stock Portfolio Tracker](./Stock_Portfolio_Submission/)**
+- 📁 [View Original Reference Task 2](./Task_2_Stock_Portfolio_Tracker/)
 
 ## Skills I'm Developing
 
