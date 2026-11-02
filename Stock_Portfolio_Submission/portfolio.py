@@ -6,6 +6,7 @@ An independent, object-oriented investment management and portfolio tracking sys
 """
 
 import csv
+import json
 import os
 import random
 import string
@@ -354,6 +355,36 @@ class StockPortfolioManager:
                         "Timestamp": row.get("Timestamp", "N/A")
                     })
         return holdings
+
+    def export_customer_portfolio_summary(self, customer_id: str, destination_file: Path) -> Dict[str, Any]:
+        """
+        Export a structured JSON report of a customer's portfolio summary.
+
+        Returns:
+            Dict[str, Any]: Aggregated report dictionary.
+        """
+        holdings = self.get_portfolio_for_customer(customer_id)
+        total_inv = sum(h["Investment"] for h in holdings)
+        total_val = sum(h["Current_value"] for h in holdings)
+        net_pl = round(total_val - total_inv, 2)
+        net_ret = round((net_pl / total_inv * 100), 2) if total_inv > 0 else 0.0
+
+        summary_data = {
+            "customer_id": customer_id,
+            "export_time": datetime.now().isoformat(),
+            "total_positions": len(holdings),
+            "total_invested": round(total_inv, 2),
+            "total_portfolio_value": round(total_val, 2),
+            "net_profit_loss": net_pl,
+            "return_percentage": net_ret,
+            "positions": holdings
+        }
+
+        dest = Path(destination_file)
+        with open(dest, "w", encoding="utf-8") as f:
+            json.dump(summary_data, f, indent=2)
+
+        return summary_data
 
     def get_all_transactions(self) -> List[Dict[str, Any]]:
         """
