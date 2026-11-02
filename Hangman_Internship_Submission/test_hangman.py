@@ -11,9 +11,12 @@ import unittest
 from pathlib import Path
 
 from hangman import (
+    Difficulty,
+    GameState,
     GuessResult,
     HangmanGame,
     HANGMAN_STAGES,
+    filter_words_by_difficulty,
     load_words,
 )
 
@@ -54,6 +57,21 @@ class TestWordLoader(unittest.TestCase):
         finally:
             if temp_path.exists():
                 temp_path.unlink()
+
+    def test_filter_words_by_difficulty(self):
+        """Verify difficulty filtering partitions words by length properly."""
+        sample_words = ["cat", "dog", "python", "elephant", "encyclopedia"]
+        easy = filter_words_by_difficulty(sample_words, Difficulty.EASY)
+        self.assertTrue(all(len(w) <= 5 for w in easy))
+        self.assertEqual(sorted(easy), ["cat", "dog"])
+
+        medium = filter_words_by_difficulty(sample_words, Difficulty.MEDIUM)
+        self.assertTrue(all(6 <= len(w) <= 8 for w in medium))
+        self.assertEqual(sorted(medium), ["elephant", "python"])
+
+        hard = filter_words_by_difficulty(sample_words, Difficulty.HARD)
+        self.assertTrue(all(len(w) >= 9 for w in hard))
+        self.assertEqual(hard, ["encyclopedia"])
 
 
 class TestHangmanGameInitialization(unittest.TestCase):
@@ -201,6 +219,20 @@ class TestHangmanWinAndLossConditions(unittest.TestCase):
         self.assertTrue(game.is_over(), "Game should be finished.")
         self.assertEqual(game.remaining_attempts, 0)
         self.assertEqual(game.incorrect_guesses, 6)
+
+    def test_game_state_transitions(self):
+        """Verify state property transitions from IN_PROGRESS to WON or LOST."""
+        game = HangmanGame(secret_word="ox")
+        self.assertEqual(game.state, GameState.IN_PROGRESS)
+        game.process_guess("o")
+        self.assertEqual(game.state, GameState.IN_PROGRESS)
+        game.process_guess("x")
+        self.assertEqual(game.state, GameState.WON)
+
+        losing_game = HangmanGame(secret_word="ox")
+        for char in ["a", "b", "c", "d", "e", "f"]:
+            losing_game.process_guess(char)
+        self.assertEqual(losing_game.state, GameState.LOST)
 
 
 class TestHangmanArtStages(unittest.TestCase):
