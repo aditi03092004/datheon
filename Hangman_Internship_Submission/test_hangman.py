@@ -185,6 +185,23 @@ class TestHangmanGameLogic(unittest.TestCase):
             self.game.process_guess(char)
         self.assertEqual(self.game.get_sorted_guessed_letters(), ["a", "b", "e", "z"])
 
+    def test_get_hint(self):
+        """Verify get_hint returns an unrevealed character or None when all are guessed."""
+        game = HangmanGame(secret_word="sky")
+        hint = game.get_hint()
+        self.assertIn(hint, ["s", "k", "y"])
+
+        # Guess that hint
+        game.process_guess(hint)
+        # Next hint should not be the already guessed letter
+        next_hint = game.get_hint()
+        self.assertNotEqual(next_hint, hint)
+
+        # Guess remaining letters
+        for ch in ["s", "k", "y"]:
+            game.process_guess(ch)
+        self.assertIsNone(game.get_hint())
+
 
 class TestHangmanWinAndLossConditions(unittest.TestCase):
     """Tests game termination scenarios: winning and losing."""
