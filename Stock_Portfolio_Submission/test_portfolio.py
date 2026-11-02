@@ -7,6 +7,7 @@ customer ID generation, transaction arithmetic, portfolio queries, and persisten
 """
 
 import csv
+import json
 import shutil
 import tempfile
 import unittest
@@ -158,6 +159,24 @@ class TestStockPortfolioTracker(unittest.TestCase):
 
         alice_tickers = {h["Ticker"] for h in alice_portfolio}
         self.assertEqual(alice_tickers, {"AAPL", "GOOGL"})
+
+    def test_export_customer_portfolio_summary(self):
+        """Verify exporting portfolio summary creates a valid structured JSON file."""
+        cid = self.manager.generate_customer_id()
+        self.manager.record_transaction(cid, "MSFT", 250.0, 4)
+        export_file = self.test_dir / "msft_report.json"
+
+        data = self.manager.export_customer_portfolio_summary(cid, export_file)
+        self.assertTrue(export_file.exists())
+        self.assertEqual(data["customer_id"], cid)
+        self.assertEqual(data["total_positions"], 1)
+        self.assertEqual(data["total_invested"], 1000.0)
+
+        # Verify disk contents match
+        with open(export_file, "r", encoding="utf-8") as f:
+            disk_data = json.load(f)
+        self.assertEqual(disk_data["customer_id"], cid)
+        self.assertEqual(len(disk_data["positions"]), 1)
 
     def test_market_data_service_resilience(self):
         """Verify market service returns positive numerical values without throwing errors."""
