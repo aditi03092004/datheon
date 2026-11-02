@@ -17,6 +17,26 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
 
 
+class PortfolioError(Exception):
+    """Base exception for portfolio operations."""
+    pass
+
+
+class InvalidTickerError(PortfolioError):
+    """Raised when a stock ticker is not found in the S&P 500 dataset."""
+    pass
+
+
+class InvalidTransactionError(PortfolioError, ValueError):
+    """Raised when transaction parameters (price, quantity) violate rules."""
+    pass
+
+
+class CustomerNotFoundError(PortfolioError):
+    """Raised when an unregistered customer ID is accessed."""
+    pass
+
+
 @dataclass
 class StockPosition:
     """Represents an individual stock holding position with computed metrics."""
@@ -273,9 +293,9 @@ class StockPortfolioManager:
         company_name = company_info["name"] if company_info else ticker_clean
 
         if buy_price <= 0:
-            raise ValueError("Purchase price must be strictly positive (> 0).")
+            raise InvalidTransactionError("Purchase price must be strictly positive (> 0).")
         if quantity <= 0:
-            raise ValueError("Share quantity must be a positive integer (> 0).")
+            raise InvalidTransactionError("Share quantity must be a positive integer (> 0).")
 
         total_investment = round(buy_price * quantity, 2)
 
