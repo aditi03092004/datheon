@@ -1,5 +1,10 @@
 # Datheon Python Programming Internship
 
+![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)
+![Tests Status](https://img.shields.io/badge/tests-passing-brightgreen.svg)
+![Internship](https://img.shields.io/badge/Internship-Datheon-orange.svg)
+![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)
+
 Welcome to my repository for the **Datheon Python Programming Internship**!
 
 This repository documents my learning journey and the Python programming projects I develop as part of the internship. The main goal is to strengthen my programming fundamentals, improve problem-solving skills, and gain practical experience by building functional applications.
