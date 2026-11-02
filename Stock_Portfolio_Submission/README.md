@@ -33,6 +33,8 @@ Stock_Portfolio_Submission/
 - **Resilient Market Service:** The `MarketDataService` class attempts to fetch real-time data from `yfinance` if installed and online, and automatically falls back to deterministic standard library pricing if offline or without third-party dependencies.
 - **Robust Path Resolution:** Uses `pathlib.Path(__file__).resolve().parent` to reliably locate `company_dataset.csv`, `details.txt`, and `portfolio_summary.csv` regardless of the directory from which the command is executed.
 - **Structured ASCII Tables:** Replaces unstructured print statements with dynamically formatted tables featuring clean headers and portfolio totals (Total Invested, Total Portfolio Value, Net Profit/Loss, and Return Percentage).
+- **Search & Filter Capabilities:** Includes programmatic company keyword search and sector queries across the S&P 500 dataset.
+- **Structured JSON Export:** Supports exporting structured, timestamped customer portfolio summaries (`export_customer_portfolio_summary`).
 - **Automated Test Coverage:** Includes unit and integration tests covering dataset ingestion, ID uniqueness, calculation arithmetic, and multi-customer portfolio isolation.
 
 ---
