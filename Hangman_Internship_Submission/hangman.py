@@ -283,6 +283,21 @@ class HangmanGame:
         return random.choice(unrevealed)
 
 
+class TerminalStyle:
+    """ANSI styling codes for clean terminal visual feedback."""
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    GREEN = "\033[32m"
+    RED = "\033[31m"
+    YELLOW = "\033[33m"
+    CYAN = "\033[36m"
+
+    @classmethod
+    def style(cls, text: str, style_code: str) -> str:
+        """Wrap text in ANSI formatting."""
+        return f"{style_code}{text}{cls.RESET}"
+
+
 def clear_screen() -> None:
     """Clear terminal screen in a cross-platform manner."""
     os.system("cls" if os.name == "nt" else "clear")
