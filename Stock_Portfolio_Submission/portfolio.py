@@ -223,6 +223,37 @@ class StockPortfolioManager:
         cleaned = ticker.strip().upper()
         return self.company_dataset.get(cleaned)
 
+    def search_companies(self, keyword: str) -> List[Tuple[str, str, str]]:
+        """
+        Search companies in the S&P 500 dataset by ticker or company name substring.
+
+        Returns:
+            List[Tuple[str, str, str]]: List of (ticker, company_name, sector) matches.
+        """
+        kw = keyword.strip().lower()
+        if not kw:
+            return []
+        matches = []
+        for ticker, data in self.company_dataset.items():
+            if kw in ticker.lower() or kw in data["name"].lower():
+                matches.append((ticker, data["name"], data["sector"]))
+        return sorted(matches, key=lambda x: x[0])
+
+    def get_companies_by_sector(self, sector_name: str) -> List[Tuple[str, str]]:
+        """
+        Filter available companies belonging to a specific GICS sector.
+
+        Returns:
+            List[Tuple[str, str]]: List of (ticker, company_name) pairs.
+        """
+        sec = sector_name.strip().lower()
+        results = [
+            (t, d["name"])
+            for t, d in self.company_dataset.items()
+            if sec in d["sector"].lower()
+        ]
+        return sorted(results, key=lambda x: x[0])
+
     def record_transaction(
         self,
         customer_id: str,
