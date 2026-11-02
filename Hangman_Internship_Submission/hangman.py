@@ -27,6 +27,14 @@ class GameState(Enum):
     LOST = "lost"
 
 
+class Difficulty(Enum):
+    """Enumeration representing game difficulty levels."""
+    EASY = "easy"
+    MEDIUM = "medium"
+    HARD = "hard"
+    ALL = "all"
+
+
 # Seven ASCII gallows stages corresponding to 0 through 6 incorrect attempts
 HANGMAN_STAGES = [
     # Stage 0: 0 incorrect guesses
@@ -130,6 +138,29 @@ def load_words(file_path: Path) -> list[str]:
         raise ValueError(f"The dictionary file at '{target}' contains no valid words.")
 
     return valid_words
+
+
+def filter_words_by_difficulty(words: list[str], difficulty: Difficulty = Difficulty.ALL) -> list[str]:
+    """
+    Filter a word pool according to the chosen difficulty level.
+
+    Args:
+        words (list[str]): Original candidate word list.
+        difficulty (Difficulty): Target difficulty tier (EASY, MEDIUM, HARD, ALL).
+
+    Returns:
+        list[str]: Filtered list of words.
+    """
+    if difficulty == Difficulty.EASY:
+        filtered = [w for w in words if len(w) <= 5]
+    elif difficulty == Difficulty.MEDIUM:
+        filtered = [w for w in words if 6 <= len(w) <= 8]
+    elif difficulty == Difficulty.HARD:
+        filtered = [w for w in words if len(w) >= 9]
+    else:
+        filtered = words
+
+    return filtered if filtered else words
 
 
 class HangmanGame:
