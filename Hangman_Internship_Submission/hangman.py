@@ -10,6 +10,7 @@ import random
 import sys
 from pathlib import Path
 from enum import Enum
+from typing import Optional
 
 
 class GuessResult(Enum):
@@ -270,6 +271,16 @@ class HangmanGame:
         elif self.is_lost():
             return GameState.LOST
         return GameState.IN_PROGRESS
+
+    def get_hint(self) -> Optional[str]:
+        """
+        Provide a hint by returning one unrevealed letter from the secret word.
+        Returns None if all letters have already been guessed.
+        """
+        unrevealed = sorted([ch for ch in set(self.secret_word) if ch not in self.guessed_letters])
+        if not unrevealed:
+            return None
+        return random.choice(unrevealed)
 
 
 def clear_screen() -> None:
