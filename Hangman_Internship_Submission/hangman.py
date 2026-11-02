@@ -20,6 +20,13 @@ class GuessResult(Enum):
     INVALID = "invalid"
 
 
+class GameState(Enum):
+    """Enumeration representing the overall state of the game."""
+    IN_PROGRESS = "in_progress"
+    WON = "won"
+    LOST = "lost"
+
+
 # Seven ASCII gallows stages corresponding to 0 through 6 incorrect attempts
 HANGMAN_STAGES = [
     # Stage 0: 0 incorrect guesses
@@ -223,6 +230,15 @@ class HangmanGame:
     def is_over(self) -> bool:
         """Check if the game has ended (either won or lost)."""
         return self.is_won() or self.is_lost()
+
+    @property
+    def state(self) -> GameState:
+        """Returns the current GameState enum value."""
+        if self.is_won():
+            return GameState.WON
+        elif self.is_lost():
+            return GameState.LOST
+        return GameState.IN_PROGRESS
 
 
 def clear_screen() -> None:
