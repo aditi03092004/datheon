@@ -15,6 +15,16 @@ Through this internship, I am working on practical Python tasks that help me app
 
 As a B.Tech Computer Science and Engineering student specialising in Cybersecurity, I believe that strong programming fundamentals are an important foundation for developing future cybersecurity solutions.
 
+### Quick Start (Unified Launcher)
+
+You can launch either project or run the complete automated test suite (30 passing tests) directly from the repository root using the unified launcher:
+
+```bash
+python run_project.py
+```
+
+---
+
 ## Projects
 
 ### Task 1: Hangman Game
