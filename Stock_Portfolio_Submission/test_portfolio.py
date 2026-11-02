@@ -56,6 +56,27 @@ class TestStockPortfolioTracker(unittest.TestCase):
         # Test non-existent ticker
         self.assertIsNone(self.manager.validate_ticker("NONEXISTENT_XYZ"))
 
+    def test_search_companies_and_sectors(self):
+        """Verify keyword search and sector filtering return accurate company matches."""
+        # Search by ticker prefix
+        results_ticker = self.manager.search_companies("AAP")
+        tickers_found = [r[0] for r in results_ticker]
+        self.assertIn("AAPL", tickers_found)
+
+        # Search by company name
+        results_name = self.manager.search_companies("Microsoft")
+        self.assertTrue(any(r[0] == "MSFT" for r in results_name))
+
+        # Search with blank string
+        self.assertEqual(self.manager.search_companies(""), [])
+
+        # Filter by sector
+        tech_companies = self.manager.get_companies_by_sector("Information Technology")
+        self.assertGreater(len(tech_companies), 10)
+        tech_tickers = [t[0] for t in tech_companies]
+        self.assertIn("AAPL", tech_tickers)
+        self.assertIn("MSFT", tech_tickers)
+
     def test_customer_id_generation_and_uniqueness(self):
         """Verify customer IDs are generated with proper prefix, format, and uniqueness."""
         generated_ids = set()
