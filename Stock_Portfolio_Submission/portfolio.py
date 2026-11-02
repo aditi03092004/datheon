@@ -11,8 +11,36 @@ import random
 import string
 import sys
 from datetime import datetime
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple
+
+
+@dataclass
+class StockPosition:
+    """Represents an individual stock holding position with computed metrics."""
+    customer_id: str
+    ticker: str
+    company_name: str
+    buy_price: float
+    quantity: int
+    investment: float
+    current_price: float
+    current_value: float
+    profit_loss: float
+    timestamp: str
+
+    @property
+    def return_percentage(self) -> float:
+        """Calculate percentage return on investment."""
+        if self.investment <= 0:
+            return 0.0
+        return round((self.profit_loss / self.investment) * 100, 2)
+
+    @property
+    def is_profitable(self) -> bool:
+        """Return True if position has positive net profit."""
+        return self.profit_loss >= 0.0
 
 
 class MarketDataService:
