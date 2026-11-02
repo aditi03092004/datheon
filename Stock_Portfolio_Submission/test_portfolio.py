@@ -14,7 +14,9 @@ import unittest
 from pathlib import Path
 
 from portfolio import (
+    InvalidTransactionError,
     MarketDataService,
+    PortfolioError,
     StockPortfolioManager,
 )
 
@@ -139,6 +141,15 @@ class TestStockPortfolioTracker(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             self.manager.record_transaction(cid, "MSFT", buy_price=100.0, quantity=-2)
+
+    def test_custom_exception_inheritance(self):
+        """Verify InvalidTransactionError inherits from both PortfolioError and ValueError."""
+        cid = self.manager.generate_customer_id()
+        with self.assertRaises(InvalidTransactionError):
+            self.manager.record_transaction(cid, "MSFT", buy_price=-50.0, quantity=2)
+
+        with self.assertRaises(PortfolioError):
+            self.manager.record_transaction(cid, "MSFT", buy_price=100.0, quantity=-1)
 
     def test_multi_customer_portfolio_isolation(self):
         """Verify that customer portfolios remain strictly separated."""
