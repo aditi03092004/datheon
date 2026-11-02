@@ -48,6 +48,7 @@ Hangman_Internship_Submission/
 | **Win/Loss Detection** | Immediately detects when all letters are revealed (win) or 6 mistakes occur (loss). |
 | **Terminal Clearing** | Cross-platform terminal screen refresh (`cls` on Windows, `clear` on Unix). |
 | **Replay & Score Loop** | Prompts players to play again (`y/n`) while keeping running win totals. |
+| **Difficulty Tiers** | Modular `Difficulty` enum filtering words by length (`EASY` $\le 5$, `MEDIUM` 6-8, `HARD` $\ge 9$). |
 
 ---
 
