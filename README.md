@@ -52,6 +52,30 @@ A menu-driven Python application designed to record stock transactions, validate
 
 - 🌟 **[View Task 2 – Stock Portfolio Tracker](./Stock_Portfolio_Submission/)**
 
+## Architecture Overview
+
+```mermaid
+graph TD
+    Launcher[run_project.py CLI Launcher] --> Task1[Task 1: Hangman Game]
+    Launcher --> Task2[Task 2: Stock Portfolio Tracker]
+    Launcher --> Tests[Automated Test Suite]
+
+    subgraph Task 1 Engine
+        Task1 --> HangmanGame[HangmanGame State Machine]
+        Task1 --> WordBank[english_words.txt Dictionary]
+        Task1 --> Streak[WinStreakTracker]
+        Task1 --> Art[7 ASCII Gallows Stages]
+    end
+
+    subgraph Task 2 Engine
+        Task2 --> Manager[StockPortfolioManager]
+        Task2 --> Dataset[company_dataset.csv 503 Companies]
+        Task2 --> Market[MarketDataService Live/Offline Fallback]
+        Task2 --> Ledger[portfolio_summary.csv Ledger]
+        Task2 --> Registry[details.txt Customer Registry]
+    end
+```
+
 ## Skills I'm Developing
 
 - Python programming fundamentals
