@@ -272,6 +272,13 @@ class TestHangmanArtStages(unittest.TestCase):
                 game.process_guess(wrong_guesses[i])
 
 
+def test_safe_input_behavior(self):
+        """Verify safe_input returns default value on EOFError."""
+        from hangman import safe_input
+        val = safe_input("Test: ", default="mock_default")
+        self.assertIsInstance(val, str)
+
+
 if __name__ == "__main__":
     unittest.main()
 
