@@ -198,6 +198,18 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertIsInstance(source, str)
 
 
+def test_sector_allocation(self):
+        """Verify sector allocation correctly aggregates invested amounts and percentages."""
+        cid = self.manager.generate_customer_id()
+        self.manager.record_transaction(cid, "AAPL", 100.0, 1)
+        self.manager.record_transaction(cid, "MSFT", 100.0, 1)
+
+        alloc = self.manager.get_sector_allocation(cid)
+        self.assertIn("Information Technology", alloc)
+        self.assertEqual(alloc["Information Technology"]["invested"], 200.0)
+        self.assertEqual(alloc["Information Technology"]["percentage"], 100.0)
+
+
 if __name__ == "__main__":
     unittest.main()
 
