@@ -447,6 +447,14 @@ class StockPortfolioManager:
 
         return summary_data
 
+    def get_profitable_positions(self, customer_id: str) -> List[Dict[str, Any]]:
+        """Filter and return only positions currently in net profit (P/L > 0)."""
+        return [h for h in self.get_portfolio_for_customer(customer_id) if h["Profit_Loss"] > 0]
+
+    def get_losing_positions(self, customer_id: str) -> List[Dict[str, Any]]:
+        """Filter and return only positions currently at a net loss (P/L < 0)."""
+        return [h for h in self.get_portfolio_for_customer(customer_id) if h["Profit_Loss"] < 0]
+
     def get_all_transactions(self) -> List[Dict[str, Any]]:
         """
         Retrieve the full history of recorded transactions across all customers.
