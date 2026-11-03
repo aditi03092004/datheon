@@ -141,6 +141,25 @@ class StockPortfolioManager:
         self.load_company_dataset()
         self.load_customers()
 
+    def validate_and_repair_storage(self) -> int:
+        """Scan portfolio_summary.csv and remove any corrupted or truncated rows."""
+        if not self.summary_file.exists():
+            return 0
+        valid_rows = []
+        with open(self.summary_file, "r", encoding="utf-8") as f:
+            reader = csv.reader(f)
+            header = next(reader, None)
+            for row in reader:
+                if len(row) >= 8 and row[0].strip() and row[1].strip():
+                    valid_rows.append(row)
+
+        with open(self.summary_file, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            if header:
+                writer.writerow(header)
+            writer.writerows(valid_rows)
+        return len(valid_rows)
+
     def _initialize_storage(self) -> None:
         """Ensure necessary files and CSV headers exist."""
         if not self.customers_file.exists():
