@@ -210,6 +210,19 @@ def test_sector_allocation(self):
         self.assertEqual(alloc["Information Technology"]["percentage"], 100.0)
 
 
+def test_validate_and_repair_storage(self):
+        """Verify storage repair recovers valid entries and filters truncated rows."""
+        cid = self.manager.generate_customer_id()
+        self.manager.record_transaction(cid, "AAPL", 150.0, 2)
+        with open(self.manager.summary_file, "a", encoding="utf-8") as f:
+            f.write("corrupted_line_without_columns\n")
+
+        repaired_count = self.manager.validate_and_repair_storage()
+        self.assertGreaterEqual(repaired_count, 1)
+        holdings = self.manager.get_portfolio_for_customer(cid)
+        self.assertEqual(len(holdings), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
 
