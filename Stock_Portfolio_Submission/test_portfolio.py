@@ -223,6 +223,15 @@ def test_validate_and_repair_storage(self):
         self.assertEqual(len(holdings), 1)
 
 
+def test_profitable_and_losing_filters(self):
+        """Verify filtering of profitable vs losing holdings."""
+        cid = self.manager.generate_customer_id()
+        self.manager.record_transaction(cid, "AAPL", 150.0, 1)
+        profitable = self.manager.get_profitable_positions(cid)
+        losing = self.manager.get_losing_positions(cid)
+        self.assertEqual(len(profitable) + len(losing), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
 
