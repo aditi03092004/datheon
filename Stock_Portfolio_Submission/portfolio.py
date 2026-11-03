@@ -376,6 +376,28 @@ class StockPortfolioManager:
                     })
         return holdings
 
+    def get_sector_allocation(self, customer_id: str) -> Dict[str, Dict[str, float]]:
+        """Calculate total invested capital and portfolio percentage allocation per GICS sector."""
+        holdings = self.get_portfolio_for_customer(customer_id)
+        if not holdings:
+            return {}
+
+        total_inv = sum(h["Investment"] for h in holdings)
+        sector_totals: Dict[str, float] = {}
+
+        for h in holdings:
+            ticker = h["Ticker"]
+            info = self.validate_ticker(ticker)
+            sector = info["sector"] if info else "Other"
+            sector_totals[sector] = sector_totals.get(sector, 0.0) + h["Investment"]
+
+        allocation: Dict[str, Dict[str, float]] = {}
+        for sec, amount in sector_totals.items():
+            pct = round((amount / total_inv) * 100, 2) if total_inv > 0 else 0.0
+            allocation[sec] = {"invested": round(amount, 2), "percentage": pct}
+
+        return allocation
+
     def export_customer_portfolio_summary(self, customer_id: str, destination_file: Path) -> Dict[str, Any]:
         """
         Export a structured JSON report of a customer's portfolio summary.
