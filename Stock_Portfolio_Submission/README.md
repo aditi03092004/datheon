@@ -40,6 +40,7 @@ Stock_Portfolio_Submission/
 ---
 
 ## 3. Financial Calculations
+- **Sector Diversification Analysis:** Aggregates holdings by GICS sectors to compute diversification percentages and render ASCII visual bar charts.
 
 The application strictly implements the required financial formulas:
 
