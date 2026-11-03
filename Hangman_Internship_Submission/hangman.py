@@ -324,6 +324,14 @@ class TerminalStyle:
         return f"{style_code}{text}{cls.RESET}"
 
 
+def safe_input(prompt_text: str, default: str = "") -> str:
+    """Safely prompt for terminal input with graceful exception fallback."""
+    try:
+        return input(prompt_text).strip()
+    except (KeyboardInterrupt, EOFError):
+        return default
+
+
 def clear_screen() -> None:
     """Clear terminal screen in a cross-platform manner."""
     os.system("cls" if os.name == "nt" else "clear")
