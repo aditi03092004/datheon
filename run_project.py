@@ -1,3 +1,13 @@
+import argparse
+
+def parse_cli_arguments():
+    parser = argparse.ArgumentParser(description="Datheon Internship Project CLI Launcher")
+    parser.add_argument("--task1", action="store_true", help="Launch Task 1: Hangman Game directly")
+    parser.add_argument("--task2", action="store_true", help="Launch Task 2: Stock Portfolio Tracker directly")
+    parser.add_argument("--test", action="store_true", help="Run automated test suites and exit")
+    parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.0")
+    return parser.parse_args()
+
 """
 Datheon Python Programming Internship - Unified Project Launcher
 Author: Aditi Hundre
@@ -61,7 +71,16 @@ def run_all_tests():
 
 
 def main():
-    """Main interactive launcher menu."""
+    args = parse_cli_arguments()
+    if args.task1:
+        run_hangman()
+        return
+    if args.task2:
+        run_portfolio()
+        return
+    if args.test:
+        run_all_tests()
+        return
     while True:
         clear_console()
         print("=" * 60)
@@ -102,3 +121,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
