@@ -21,6 +21,32 @@ class GuessResult(Enum):
     INVALID = "invalid"
 
 
+class WinStreakTracker:
+    """Tracks consecutive game wins and overall win percentage."""
+
+    def __init__(self):
+        self.current_streak: int = 0
+        self.highest_streak: int = 0
+        self.total_games: int = 0
+        self.total_wins: int = 0
+
+    def record_result(self, won: bool) -> None:
+        self.total_games += 1
+        if won:
+            self.total_wins += 1
+            self.current_streak += 1
+            if self.current_streak > self.highest_streak:
+                self.highest_streak = self.current_streak
+        else:
+            self.current_streak = 0
+
+    @property
+    def win_rate(self) -> float:
+        if self.total_games == 0:
+            return 0.0
+        return round((self.total_wins / self.total_games) * 100, 2)
+
+
 class GameState(Enum):
     """Enumeration representing the overall state of the game."""
     IN_PROGRESS = "in_progress"
