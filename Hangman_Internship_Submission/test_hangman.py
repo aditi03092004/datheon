@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 from hangman import (
+    WinStreakTracker,
     Difficulty,
     GameState,
     GuessResult,
