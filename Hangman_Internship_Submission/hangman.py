@@ -408,16 +408,13 @@ def main() -> None:
 
     print(f"Successfully loaded {len(word_pool)} words. Starting game...\n")
 
-    total_games = 0
-    wins = 0
+    tracker = WinStreakTracker()
 
     while True:
-        total_games += 1
         won = play_session(word_pool, clear_console=True)
-        if won:
-            wins += 1
 
-        print(f"Current Score: {wins} Wins / {total_games} Games Played")
+        tracker.record_result(won)
+        print(f"Current Score: {tracker.total_wins} Wins / {tracker.total_games} Games (Win Rate: {tracker.win_rate}% | Streak: {tracker.current_streak} | Best: {tracker.highest_streak})")
         try:
             replay = input("\nWould you like to play another round? (y/n): ").strip().lower()
         except (KeyboardInterrupt, EOFError):
