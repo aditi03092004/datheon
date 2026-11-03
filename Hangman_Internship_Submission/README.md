@@ -35,6 +35,7 @@ Hangman_Internship_Submission/
 ---
 
 ## 3. Core Features & Compliance
+- **Win Streak Tracking:** Records consecutive victorious rounds, personal best streak, and lifetime win percentage.
 
 | Requirement | Implementation Detail |
 | :--- | :--- |
