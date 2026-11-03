@@ -481,6 +481,21 @@ def print_header(title: str) -> None:
     print("=" * width)
 
 
+def render_sector_bar_chart(allocation: Dict[str, Dict[str, float]], bar_width: int = 30) -> None:
+    """Render a clean text-based ASCII bar chart of sector allocation."""
+    if not allocation:
+        print("  (No allocation data to display)")
+        return
+    print("\nSector Allocation Breakdown:")
+    print("-" * 55)
+    for sector, data in sorted(allocation.items(), key=lambda x: x[1]['percentage'], reverse=True):
+        pct = data['percentage']
+        bar_len = int((pct / 100.0) * bar_width)
+        bar = "#" * bar_len
+        print(f" {sector[:20].ljust(20)} | {bar.ljust(bar_width)} | {pct:>5.1f}% (${data['invested']:,.2f})")
+    print("-" * 55)
+
+
 def render_table(headers: List[str], rows: List[List[str]]) -> None:
     """
     Render clean ASCII table with dynamically calculated column widths.
