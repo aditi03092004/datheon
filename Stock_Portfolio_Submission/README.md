@@ -40,6 +40,7 @@ Stock_Portfolio_Submission/
 ---
 
 ## 3. Financial Calculations
+- **CSV Export Utility:** `export_customer_csv` extracts filtered customer holdings into an independent CSV file.
 - **Rebalancing Suggestions:** Automatically flags single-sector concentration exceeding risk thresholds (default 40%).
 - **Ticker History Search:** Fast indexing and filtering of historical purchases by ticker.
 - **Sector Diversification Analysis:** Aggregates holdings by GICS sectors to compute diversification percentages and render ASCII visual bar charts.
