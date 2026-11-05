@@ -1,3 +1,31 @@
+def run_project_doctor() -> bool:
+    """Diagnostic routine checking workspace integrity and file accessibility."""
+    print("=" * 60)
+    print("      DATHEON INTERNSHIP PROJECT HEALTH CHECK (DOCTOR)     ")
+    print("=" * 60)
+    all_ok = True
+
+    checks = [
+        ("Task 1 Directory", TASK_1_DIR.is_dir()),
+        ("Task 1 Words Dictionary", (TASK_1_DIR / "english_words.txt").is_file()),
+        ("Task 1 Executable Script", (TASK_1_DIR / "hangman.py").is_file()),
+        ("Task 2 Directory", TASK_2_DIR.is_dir()),
+        ("Task 2 Company Dataset", (TASK_2_DIR / "company_dataset.csv").is_file()),
+        ("Task 2 Executable Script", (TASK_2_DIR / "portfolio.py").is_file()),
+    ]
+
+    for name, status in checks:
+        mark = "[PASS]" if status else "[FAIL]"
+        if not status:
+            all_ok = False
+        print(f" {mark} {name}")
+
+    print("=" * 60)
+    print(" Result: " + ("All system components healthy!" if all_ok else "Issues detected."))
+    print("=" * 60)
+    return all_ok
+
+
 import argparse
 
 def print_project_statistics():
@@ -21,6 +49,7 @@ def parse_cli_arguments():
     parser.add_argument("--task1", action="store_true", help="Launch Task 1: Hangman Game directly")
     parser.add_argument("--task2", action="store_true", help="Launch Task 2: Stock Portfolio Tracker directly")
     parser.add_argument("--test", action="store_true", help="Run automated test suites and exit")
+    parser.add_argument("--doctor", action="store_true", help="Run system diagnostics and verify file integrity")
     parser.add_argument("--stats", action="store_true", help="Display internship project metrics and statistics")
     parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.0")
     return parser.parse_args()
@@ -100,6 +129,9 @@ def main():
         return
     if args.stats:
         print_project_statistics()
+        return
+    if args.doctor:
+        run_project_doctor()
         return
     while True:
         clear_console()
