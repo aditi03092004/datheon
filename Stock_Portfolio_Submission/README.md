@@ -40,6 +40,8 @@ Stock_Portfolio_Submission/
 ---
 
 ## 3. Financial Calculations
+- **Rebalancing Suggestions:** Automatically flags single-sector concentration exceeding risk thresholds (default 40%).
+- **Ticker History Search:** Fast indexing and filtering of historical purchases by ticker.
 - **Sector Diversification Analysis:** Aggregates holdings by GICS sectors to compute diversification percentages and render ASCII visual bar charts.
 
 The application strictly implements the required financial formulas:
