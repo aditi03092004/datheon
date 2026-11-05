@@ -467,6 +467,11 @@ class StockPortfolioManager:
         """Filter and return only positions currently at a net loss (P/L < 0)."""
         return [h for h in self.get_portfolio_for_customer(customer_id) if h["Profit_Loss"] < 0]
 
+    def find_transactions_by_ticker(self, ticker: str) -> List[Dict[str, Any]]:
+        """Filter and return all historical transactions matching a specific ticker."""
+        sym = ticker.strip().upper()
+        return [t for t in self.get_all_transactions() if t.get("Ticker", "").upper() == sym]
+
     def get_all_transactions(self) -> List[Dict[str, Any]]:
         """
         Retrieve the full history of recorded transactions across all customers.
