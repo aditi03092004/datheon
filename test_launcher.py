@@ -16,5 +16,11 @@ class TestLauncherConfiguration(unittest.TestCase):
         self.assertTrue((TASK_2_DIR / "portfolio.py").exists())
 
 
+def test_run_project_doctor(self):
+        """Verify doctor health-check passes in valid workspace."""
+        from run_project import run_project_doctor
+        self.assertTrue(run_project_doctor())
+
+
 if __name__ == "__main__":
     unittest.main()
