@@ -269,6 +269,16 @@ def test_weighted_return_percentage(self):
         self.assertIsInstance(w_ret, float)
 
 
+def test_export_customer_csv(self):
+        """Verify exporting filtered customer holdings to a dedicated CSV file."""
+        cid = self.manager.generate_customer_id()
+        self.manager.record_transaction(cid, "AAPL", 150.0, 1)
+        csv_path = self.test_dir / "customer_export.csv"
+        count = self.manager.export_customer_csv(cid, csv_path)
+        self.assertEqual(count, 1)
+        self.assertTrue(csv_path.exists())
+
+
 if __name__ == "__main__":
     unittest.main()
 
