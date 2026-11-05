@@ -409,6 +409,7 @@ def play_session(word_list: list[str], clear_console: bool = True) -> bool:
         print("\n************************************************")
         print("  CONGRATULATIONS! YOU SUCCESSFULLY GUESSED IT! ")
         print(f"  The word was: {game.secret_word.upper()}")
+        print(f"  Accuracy: {game.guess_accuracy}% ({game.correct_guesses_count}/{game.total_guesses} correct)")
         print("************************************************\n")
         return True
     else:
