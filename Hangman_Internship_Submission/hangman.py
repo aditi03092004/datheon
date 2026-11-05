@@ -285,6 +285,23 @@ class HangmanGame:
         """Check if the maximum incorrect guesses limit has been reached."""
         return self.incorrect_guesses >= self.max_incorrect
 
+    @property
+    def total_guesses(self) -> int:
+        """Total number of unique guesses made."""
+        return len(self.guessed_letters)
+
+    @property
+    def correct_guesses_count(self) -> int:
+        """Number of correct unique guesses made."""
+        return len([c for c in self.guessed_letters if c in self.secret_word])
+
+    @property
+    def guess_accuracy(self) -> float:
+        """Percentage of unique guesses that were correct."""
+        if not self.guessed_letters:
+            return 0.0
+        return round((self.correct_guesses_count / len(self.guessed_letters)) * 100, 1)
+
     def is_over(self) -> bool:
         """Check if the game has ended (either won or lost)."""
         return self.is_won() or self.is_lost()
