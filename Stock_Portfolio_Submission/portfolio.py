@@ -440,6 +440,17 @@ class StockPortfolioManager:
                 )
         return suggestions
 
+    def export_customer_csv(self, customer_id: str, destination_file: Path) -> int:
+        """Export filtered holdings for a specific customer to a standalone CSV file."""
+        holdings = self.get_portfolio_for_customer(customer_id)
+        dest = Path(destination_file)
+        with open(dest, "w", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow(["Ticker", "Company_Name", "Buy_Price", "Quantity", "Investment", "Current_Price", "Current_Value", "Profit_Loss", "Timestamp"])
+            for h in holdings:
+                writer.writerow([h["Ticker"], h["Company_Name"], h["Buy_price"], h["Quantity"], h["Investment"], h["Current_price"], h["Current_value"], h["Profit_Loss"], h["Timestamp"]])
+        return len(holdings)
+
     def export_customer_portfolio_summary(self, customer_id: str, destination_file: Path) -> Dict[str, Any]:
         """
         Export a structured JSON report of a customer's portfolio summary.
