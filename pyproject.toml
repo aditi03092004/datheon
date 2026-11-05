@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "datheon-internship-suite"
+version = "2.1.0"
+authors = [
+    { name = "Aditi Hundre", email = "aditihundre0309@gmail.com" }
+]
+description = "Datheon Python Programming Internship Tasks - Hangman Game & Stock Portfolio Tracker"
+readme = "README.md"
+requires-python = ">=3.8"
+keywords = ["python", "internship", "hangman", "portfolio", "finance"]
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
