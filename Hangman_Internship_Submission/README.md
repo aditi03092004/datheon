@@ -35,6 +35,7 @@ Hangman_Internship_Submission/
 ---
 
 ## 3. Core Features & Compliance
+- **Round Timer:** Dynamic `GameTimer` recording turn pacing and round duration in seconds.
 - **Guess Accuracy Metrics:** Real-time computation of player precision ratio: `(Correct Guesses / Total Guesses) * 100%`.
 - **Win Streak Tracking:** Records consecutive victorious rounds, personal best streak, and lifetime win percentage.
 
