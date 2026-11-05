@@ -417,6 +417,17 @@ class StockPortfolioManager:
 
         return allocation
 
+    def get_weighted_return_percentage(self, customer_id: str) -> float:
+        """Calculate total portfolio weighted average return on invested capital."""
+        holdings = self.get_portfolio_for_customer(customer_id)
+        if not holdings:
+            return 0.0
+        total_inv = sum(h["Investment"] for h in holdings)
+        if total_inv <= 0:
+            return 0.0
+        total_profit = sum(h["Profit_Loss"] for h in holdings)
+        return round((total_profit / total_inv) * 100, 2)
+
     def get_rebalancing_suggestions(self, customer_id: str, max_sector_pct: float = 40.0) -> List[str]:
         """Analyze sector allocation and return warnings if any sector exceeds the concentration threshold."""
         allocations = self.get_sector_allocation(customer_id)
