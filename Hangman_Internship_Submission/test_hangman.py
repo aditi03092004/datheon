@@ -279,6 +279,20 @@ def test_safe_input_behavior(self):
         self.assertIsInstance(val, str)
 
 
+def test_guess_accuracy_calculation(self):
+        """Verify accuracy percentage calculation based on correct and total guesses."""
+        game = HangmanGame(secret_word="code")
+        self.assertEqual(game.guess_accuracy, 0.0)
+
+        game.process_guess("c")  # Correct (1/1 = 100%)
+        self.assertEqual(game.guess_accuracy, 100.0)
+
+        game.process_guess("z")  # Wrong (1/2 = 50%)
+        self.assertEqual(game.guess_accuracy, 50.0)
+        self.assertEqual(game.total_guesses, 2)
+        self.assertEqual(game.correct_guesses_count, 1)
+
+
 if __name__ == "__main__":
     unittest.main()
 
