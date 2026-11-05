@@ -246,6 +246,21 @@ def test_rebalancing_suggestions(self):
         self.assertEqual(len(no_alerts), 0)
 
 
+def test_find_transactions_by_ticker(self):
+        """Verify historical transactions are filterable by specific ticker symbol."""
+        cid = self.manager.generate_customer_id()
+        self.manager.record_transaction(cid, "AAPL", 150.0, 1)
+        self.manager.record_transaction(cid, "MSFT", 250.0, 1)
+
+        aapl_txs = self.manager.find_transactions_by_ticker("AAPL")
+        self.assertEqual(len(aapl_txs), 1)
+        self.assertEqual(aapl_txs[0]["Ticker"], "AAPL")
+
+        # Case-insensitive
+        aapl_lower = self.manager.find_transactions_by_ticker("aapl")
+        self.assertEqual(len(aapl_lower), 1)
+
+
 if __name__ == "__main__":
     unittest.main()
 
