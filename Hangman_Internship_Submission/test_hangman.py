@@ -293,6 +293,18 @@ def test_guess_accuracy_calculation(self):
         self.assertEqual(game.correct_guesses_count, 1)
 
 
+class TestGameTimer(unittest.TestCase):
+    """Tests round duration timer behavior."""
+
+    def test_timer_elapsed_and_stop(self):
+        from hangman import GameTimer
+        timer = GameTimer()
+        self.assertGreaterEqual(timer.elapsed_seconds, 0.0)
+        duration = timer.stop()
+        self.assertEqual(duration, timer.elapsed_seconds)
+        self.assertIsNotNone(timer.end_time)
+
+
 if __name__ == "__main__":
     unittest.main()
 
