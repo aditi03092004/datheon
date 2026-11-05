@@ -232,6 +232,20 @@ def test_profitable_and_losing_filters(self):
         self.assertEqual(len(profitable) + len(losing), 1)
 
 
+def test_rebalancing_suggestions(self):
+        """Verify portfolio concentration alerts trigger when sector allocation exceeds threshold."""
+        cid = self.manager.generate_customer_id()
+        self.manager.record_transaction(cid, "AAPL", 100.0, 1)  # 100% Tech
+
+        alerts = self.manager.get_rebalancing_suggestions(cid, max_sector_pct=40.0)
+        self.assertEqual(len(alerts), 1)
+        self.assertIn("Concentration alert: Information Technology", alerts[0])
+
+        # Balanced portfolio under 100% threshold
+        no_alerts = self.manager.get_rebalancing_suggestions(cid, max_sector_pct=100.0)
+        self.assertEqual(len(no_alerts), 0)
+
+
 if __name__ == "__main__":
     unittest.main()
 
