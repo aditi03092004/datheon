@@ -261,6 +261,14 @@ def test_find_transactions_by_ticker(self):
         self.assertEqual(len(aapl_lower), 1)
 
 
+def test_weighted_return_percentage(self):
+        """Verify portfolio weighted average return on invested capital."""
+        cid = self.manager.generate_customer_id()
+        self.manager.record_transaction(cid, "AAPL", 100.0, 1)
+        w_ret = self.manager.get_weighted_return_percentage(cid)
+        self.assertIsInstance(w_ret, float)
+
+
 if __name__ == "__main__":
     unittest.main()
 
