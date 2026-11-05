@@ -5,7 +5,7 @@ def print_project_statistics():
     words_file = TASK_1_DIR / "english_words.txt"
     dataset_file = TASK_2_DIR / "company_dataset.csv"
     words_count = sum(1 for line in open(words_file, encoding='utf-8') if line.strip()) if words_file.exists() else 0
-    companies_count = sum(1 for line in open(dataset_file, encoding='utf-8') if line.strip()) - 1 if dataset_file.exists() else 0
+    companies_count = sum(1 for line in open(dataset_file, encoding='utf-8', errors='ignore') if line.strip()) - 1 if dataset_file.exists() else 0
 
     print("=" * 60)
     print("      DATHEON INTERNSHIP PROJECT METRICS SUMMARY      ")
