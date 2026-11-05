@@ -417,6 +417,18 @@ class StockPortfolioManager:
 
         return allocation
 
+    def get_rebalancing_suggestions(self, customer_id: str, max_sector_pct: float = 40.0) -> List[str]:
+        """Analyze sector allocation and return warnings if any sector exceeds the concentration threshold."""
+        allocations = self.get_sector_allocation(customer_id)
+        suggestions: List[str] = []
+        for sector, data in allocations.items():
+            if data["percentage"] > max_sector_pct:
+                suggestions.append(
+                    f"Concentration alert: {sector} represents {data['percentage']:.1f}% "
+                    f"of your portfolio (recommended maximum is {max_sector_pct:.1f}%)."
+                )
+        return suggestions
+
     def export_customer_portfolio_summary(self, customer_id: str, destination_file: Path) -> Dict[str, Any]:
         """
         Export a structured JSON report of a customer's portfolio summary.
