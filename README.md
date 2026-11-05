@@ -101,6 +101,14 @@ I am documenting my progress, learning from mistakes, and improving my code one 
 
 I sincerely thank **Datheon** for providing this internship opportunity and encouraging me to strengthen my Python programming skills through practical tasks.
 
+### System Diagnostics & Health Check
+
+You can run automated workspace verification using the built-in doctor utility:
+
+```bash
+python run_project.py --doctor
+```
+
 ### Project Metrics & Verification Summary
 
 | Component | Task 1: Hangman Game | Task 2: Stock Portfolio Tracker |
