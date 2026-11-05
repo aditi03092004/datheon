@@ -101,6 +101,17 @@ I am documenting my progress, learning from mistakes, and improving my code one 
 
 I sincerely thank **Datheon** for providing this internship opportunity and encouraging me to strengthen my Python programming skills through practical tasks.
 
+### Project Metrics & Verification Summary
+
+| Component | Task 1: Hangman Game | Task 2: Stock Portfolio Tracker |
+| :--- | :--- | :--- |
+| **Architecture** | Object-Oriented State Engine | Modular Financial & Market Service |
+| **Data Source** | 2,492 Curated English Words | 503 S&P 500 Companies Dataset |
+| **Test Framework** | Python Standard `unittest` | Python Standard `unittest` |
+| **Passing Tests** | 22 Passing Unit Tests | 11 Passing Unit Tests |
+| **Key Features** | 7 Gallows Stages, Win Streaks, Hints | Live/Offline Fallback, Sector Breakdown |
+| **Offline Ready** | 100% Standard Library | 100% Standard Library Fallback |
+
 ## Connect With Me
 
 I'm a B.Tech CSE Cybersecurity student interested in Python programming, cybersecurity, and continuous learning.
