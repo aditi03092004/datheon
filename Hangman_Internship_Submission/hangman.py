@@ -21,6 +21,28 @@ class GuessResult(Enum):
     INVALID = "invalid"
 
 
+import time
+
+class GameTimer:
+    """Tracks start time and duration for game rounds."""
+
+    def __init__(self):
+        self.start_time: float = time.time()
+        self.end_time: Optional[float] = None
+
+    def stop(self) -> float:
+        """Stop timer and return total elapsed seconds."""
+        if self.end_time is None:
+            self.end_time = time.time()
+        return self.elapsed_seconds
+
+    @property
+    def elapsed_seconds(self) -> float:
+        """Return elapsed time in seconds rounded to 1 decimal place."""
+        current = self.end_time if self.end_time is not None else time.time()
+        return round(max(0.0, current - self.start_time), 1)
+
+
 class WinStreakTracker:
     """Tracks consecutive game wins and overall win percentage."""
 
