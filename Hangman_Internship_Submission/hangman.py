@@ -407,6 +407,7 @@ def play_session(word_list: list[str], clear_console: bool = True) -> bool:
     """
     secret_word = random.choice(word_list)
     game = HangmanGame(secret_word=secret_word)
+    timer = GameTimer()
     current_feedback = "Welcome! Guess the hidden word one letter at a time."
 
     while not game.is_over():
@@ -431,7 +432,8 @@ def play_session(word_list: list[str], clear_console: bool = True) -> bool:
         print("\n************************************************")
         print("  CONGRATULATIONS! YOU SUCCESSFULLY GUESSED IT! ")
         print(f"  The word was: {game.secret_word.upper()}")
-        print(f"  Accuracy: {game.guess_accuracy}% ({game.correct_guesses_count}/{game.total_guesses} correct)")
+        timer.stop()
+        print(f"  Round Time: {timer.elapsed_seconds}s | Accuracy: {game.guess_accuracy}% ({game.correct_guesses_count}/{game.total_guesses} correct)")
         print("************************************************\n")
         return True
     else:
