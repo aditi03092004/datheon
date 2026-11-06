@@ -575,6 +575,49 @@ class StockPortfolioManager:
                 )
         return suggestions
 
+    def get_portfolio_risk_profile(self, customer_id: str) -> Dict[str, Any]:
+        """
+        Analyze sector concentration and compute the Herfindahl-Hirschman Index (HHI)
+        to evaluate portfolio diversification and risk exposure.
+
+        Returns:
+            Dict[str, Any]: Risk profile analysis with metrics, classification, and top exposure.
+        """
+        allocations = self.get_sector_allocation(customer_id)
+        if not allocations:
+            return {
+                "customer_id": customer_id,
+                "total_sectors": 0,
+                "herfindahl_index": 0.0,
+                "risk_level": "Uninvested / Empty",
+                "top_sector": "None",
+                "top_sector_weight": 0.0,
+                "is_diversified": False
+            }
+
+        hhi = round(sum(d["percentage"] ** 2 for d in allocations.values()), 1)
+        sorted_sectors = sorted(allocations.items(), key=lambda x: x[1]["percentage"], reverse=True)
+        top_sector, top_data = sorted_sectors[0]
+
+        if hhi < 2500.0:
+            risk_level = "Low Concentration / Well Diversified"
+        elif hhi < 5000.0:
+            risk_level = "Moderate Concentration"
+        else:
+            risk_level = "High Concentration / Concentrated Risk"
+
+        is_diversified = (len(allocations) >= 3 and top_data["percentage"] <= 40.0)
+
+        return {
+            "customer_id": customer_id,
+            "total_sectors": len(allocations),
+            "herfindahl_index": hhi,
+            "risk_level": risk_level,
+            "top_sector": top_sector,
+            "top_sector_weight": top_data["percentage"],
+            "is_diversified": is_diversified
+        }
+
     def export_customer_csv(self, customer_id: str, destination_file: Path) -> int:
         """Export filtered holdings for a specific customer to a standalone CSV file."""
         holdings = self.get_portfolio_for_customer(customer_id)
