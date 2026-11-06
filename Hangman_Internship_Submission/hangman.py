@@ -44,15 +44,23 @@ class GameTimer:
 
 
 class WinStreakTracker:
-    """Tracks consecutive game wins and overall win percentage."""
+    """Tracks consecutive game wins, per-round history, and aggregate session metrics."""
 
     def __init__(self):
         self.current_streak: int = 0
         self.highest_streak: int = 0
         self.total_games: int = 0
         self.total_wins: int = 0
+        self.history: list[dict] = []
 
-    def record_result(self, won: bool) -> None:
+    def record_result(
+        self,
+        won: bool,
+        word: str = "",
+        duration: float = 0.0,
+        accuracy: float = 0.0
+    ) -> None:
+        """Record the outcome of a completed round with optional telemetry metrics."""
         self.total_games += 1
         if won:
             self.total_wins += 1
@@ -62,11 +70,48 @@ class WinStreakTracker:
         else:
             self.current_streak = 0
 
+        self.history.append({
+            "round": self.total_games,
+            "won": won,
+            "word": word.lower() if word else "",
+            "duration": round(max(0.0, duration), 1),
+            "accuracy": round(max(0.0, accuracy), 1)
+        })
+
     @property
     def win_rate(self) -> float:
+        """Calculate win percentage rounded to 2 decimal places."""
         if self.total_games == 0:
             return 0.0
         return round((self.total_wins / self.total_games) * 100, 2)
+
+    @property
+    def average_accuracy(self) -> float:
+        """Calculate mean guess accuracy percentage across all recorded rounds."""
+        if not self.history:
+            return 0.0
+        accuracies = [h["accuracy"] for h in self.history if h.get("accuracy", 0.0) > 0.0]
+        if not accuracies:
+            return 0.0
+        return round(sum(accuracies) / len(accuracies), 1)
+
+    @property
+    def total_duration(self) -> float:
+        """Calculate total play time in seconds across all recorded rounds."""
+        return round(sum(h.get("duration", 0.0) for h in self.history), 1)
+
+    def get_session_summary(self) -> dict:
+        """Generate aggregated performance telemetry dictionary for the current session."""
+        return {
+            "total_games": self.total_games,
+            "total_wins": self.total_wins,
+            "win_rate": self.win_rate,
+            "highest_streak": self.highest_streak,
+            "current_streak": self.current_streak,
+            "average_accuracy": self.average_accuracy,
+            "total_duration": self.total_duration,
+            "rounds": list(self.history)
+        }
 
 
 class GameState(Enum):
