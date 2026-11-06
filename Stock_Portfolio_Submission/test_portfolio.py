@@ -278,6 +278,34 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertEqual(count, 1)
         self.assertTrue(csv_path.exists())
 
+    def test_consolidated_holdings_and_cost_basis(self):
+        """Verify consolidation across multiple purchase lots of the same ticker."""
+        cid = self.manager.generate_customer_id()
+        # Empty customer
+        self.assertEqual(self.manager.get_consolidated_holdings(cid), {})
+
+        # Lot 1: 10 shares @ $100 = $1,000
+        self.manager.record_transaction(cid, "MSFT", 100.0, 10)
+        # Lot 2: 10 shares @ $200 = $2,000
+        self.manager.record_transaction(cid, "MSFT", 200.0, 10)
+        # Another stock: 5 shares @ $150 = $750
+        self.manager.record_transaction(cid, "AAPL", 150.0, 5)
+
+        consolidated = self.manager.get_consolidated_holdings(cid)
+        self.assertEqual(len(consolidated), 2)
+        self.assertIn("MSFT", consolidated)
+        self.assertIn("AAPL", consolidated)
+
+        msft = consolidated["MSFT"]
+        self.assertEqual(msft["total_quantity"], 20)
+        self.assertEqual(msft["total_invested"], 3000.0)
+        self.assertEqual(msft["average_buy_price"], 150.0)
+        self.assertEqual(msft["sector"], "Information Technology")
+
+        # Portfolio weights sum close to 100%
+        total_weight = sum(pos["portfolio_weight"] for pos in consolidated.values())
+        self.assertAlmostEqual(total_weight, 100.0, delta=0.5)
+
 
 if __name__ == "__main__":
     unittest.main()
