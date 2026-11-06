@@ -212,6 +212,34 @@ def filter_words_by_difficulty(words: list[str], difficulty: Difficulty = Diffic
     return filtered if filtered else words
 
 
+def calculate_word_complexity(word: str) -> float:
+    """
+    Calculate a normalized complexity score (1.0 to 10.0) for a candidate secret word
+    based on character length, unique letter diversity, and rare letter distribution.
+    """
+    if not word or not word.strip():
+        return 0.0
+
+    cleaned = word.strip().lower()
+    if not cleaned.isalpha():
+        raise ValueError("Word must be alphabetic to compute complexity.")
+
+    rare_letters = set("jqxzvkw")
+    uncommon_letters = set("bcfgmpy")
+
+    length_score = min(len(cleaned) * 0.4, 4.0)
+    diversity_score = (len(set(cleaned)) / len(cleaned)) * 2.5
+
+    rarity_sum = sum(
+        2.0 if char in rare_letters else (1.0 if char in uncommon_letters else 0.2)
+        for char in set(cleaned)
+    )
+    rarity_score = min(rarity_sum * 0.5, 3.5)
+
+    raw_total = length_score + diversity_score + rarity_score
+    return round(max(1.0, min(10.0, raw_total)), 1)
+
+
 class HangmanGame:
     """
     Encapsulates core Hangman game logic, rules, and state management.
@@ -249,6 +277,11 @@ class HangmanGame:
     def remaining_attempts(self) -> int:
         """Returns the number of remaining incorrect guesses allowed."""
         return max(0, self.max_incorrect - self.incorrect_guesses)
+
+    @property
+    def complexity_score(self) -> float:
+        """Returns the calculated complexity score (1.0 - 10.0) of the secret word."""
+        return calculate_word_complexity(self.secret_word)
 
     def get_masked_word(self) -> str:
         """
