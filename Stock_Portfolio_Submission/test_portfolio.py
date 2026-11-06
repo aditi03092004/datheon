@@ -343,6 +343,41 @@ class TestStockPortfolioTracker(unittest.TestCase):
         active_after = self.manager.get_consolidated_holdings(cid)
         self.assertNotIn("AAPL", active_after)
 
+    def test_portfolio_risk_profiling(self):
+        """Verify risk profiling, Herfindahl index calculation, and diversification classification."""
+        # 1. Uninvested portfolio
+        cid_empty = self.manager.generate_customer_id()
+        risk_empty = self.manager.get_portfolio_risk_profile(cid_empty)
+        self.assertEqual(risk_empty["total_sectors"], 0)
+        self.assertEqual(risk_empty["risk_level"], "Uninvested / Empty")
+        self.assertFalse(risk_empty["is_diversified"])
+
+        # 2. Concentrated portfolio (100% in Information Technology)
+        cid_conc = self.manager.generate_customer_id()
+        self.manager.record_transaction(cid_conc, "AAPL", 150.0, 2)
+        self.manager.record_transaction(cid_conc, "MSFT", 250.0, 1)
+
+        risk_conc = self.manager.get_portfolio_risk_profile(cid_conc)
+        self.assertEqual(risk_conc["total_sectors"], 1)
+        self.assertEqual(risk_conc["top_sector"], "Information Technology")
+        self.assertEqual(risk_conc["top_sector_weight"], 100.0)
+        self.assertEqual(risk_conc["herfindahl_index"], 10000.0)
+        self.assertEqual(risk_conc["risk_level"], "High Concentration / Concentrated Risk")
+        self.assertFalse(risk_conc["is_diversified"])
+
+        # 3. Well-diversified portfolio across 4 sectors (25% each)
+        cid_div = self.manager.generate_customer_id()
+        self.manager.record_transaction(cid_div, "AAPL", 100.0, 1)  # Tech ($100)
+        self.manager.record_transaction(cid_div, "JNJ", 100.0, 1)   # Health Care ($100)
+        self.manager.record_transaction(cid_div, "JPM", 100.0, 1)   # Financials ($100)
+        self.manager.record_transaction(cid_div, "XOM", 100.0, 1)   # Energy ($100)
+
+        risk_div = self.manager.get_portfolio_risk_profile(cid_div)
+        self.assertEqual(risk_div["total_sectors"], 4)
+        self.assertEqual(risk_div["top_sector_weight"], 25.0)
+        self.assertEqual(risk_div["herfindahl_index"], 2500.0)
+        self.assertTrue(risk_div["is_diversified"])
+
 
 if __name__ == "__main__":
     unittest.main()
