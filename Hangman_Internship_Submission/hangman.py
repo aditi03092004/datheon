@@ -218,22 +218,32 @@ class HangmanGame:
     Decoupled from input/output to allow thorough automated testing.
     """
 
-    def __init__(self, secret_word: str, max_incorrect: int = 6):
+    def __init__(self, secret_word: str, max_incorrect: int = 6, max_hints: int = 2):
         """
         Initialize a new Hangman game instance.
 
         Args:
             secret_word (str): The secret target word to be guessed.
             max_incorrect (int): Maximum allowable incorrect guesses (default: 6).
+            max_hints (int): Maximum number of hints permitted per round (default: 2).
         """
         if not secret_word or not secret_word.isalpha():
             raise ValueError("Secret word must be a non-empty alphabetic string.")
+        if max_hints < 0:
+            raise ValueError("Maximum hints must be a non-negative integer.")
 
         self.secret_word = secret_word.lower()
         self.max_incorrect = max_incorrect
+        self.max_hints = max_hints
+        self.hints_used: int = 0
         self.guessed_letters: set[str] = set()
         self.incorrect_guesses: int = 0
         self.last_status_message: str = ""
+
+    @property
+    def remaining_hints(self) -> int:
+        """Returns the number of hints remaining in this round."""
+        return max(0, self.max_hints - self.hints_used)
 
     @property
     def remaining_attempts(self) -> int:
@@ -337,15 +347,23 @@ class HangmanGame:
             return GameState.LOST
         return GameState.IN_PROGRESS
 
-    def get_hint(self) -> Optional[str]:
+    def get_hint(self, consume_budget: bool = True) -> Optional[str]:
         """
         Provide a hint by returning one unrevealed letter from the secret word.
-        Returns None if all letters have already been guessed.
+        Consumes from the round's hint budget if consume_budget is True.
+        Returns None if all letters have already been guessed or hint budget is exhausted.
         """
+        if consume_budget and self.remaining_hints <= 0:
+            return None
+
         unrevealed = sorted([ch for ch in set(self.secret_word) if ch not in self.guessed_letters])
         if not unrevealed:
             return None
-        return random.choice(unrevealed)
+
+        hint = random.choice(unrevealed)
+        if consume_budget:
+            self.hints_used += 1
+        return hint
 
 
 class TerminalStyle:
