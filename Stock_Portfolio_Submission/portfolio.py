@@ -358,6 +358,76 @@ class StockPortfolioManager:
 
         return record
 
+    def record_sale(
+        self,
+        customer_id: str,
+        ticker: str,
+        sell_price: float,
+        quantity: int
+    ) -> Dict[str, Any]:
+        """
+        Execute and persist a stock sale transaction, calculating realized profit/loss.
+
+        Raises:
+            InvalidTransactionError: If parameters are invalid or customer holds insufficient shares.
+
+        Returns:
+            Dict[str, Any]: Detailed sale transaction summary.
+        """
+        ticker_clean = ticker.strip().upper()
+        if sell_price <= 0:
+            raise InvalidTransactionError("Sell price must be strictly positive (> 0).")
+        if quantity <= 0:
+            raise InvalidTransactionError("Sale quantity must be a positive integer (> 0).")
+
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if ticker_clean not in consolidated or consolidated[ticker_clean]["total_quantity"] < quantity:
+            owned = consolidated.get(ticker_clean, {}).get("total_quantity", 0)
+            raise InvalidTransactionError(
+                f"Insufficient shares to sell for {ticker_clean}: owned {owned}, requested {quantity}."
+            )
+
+        pos = consolidated[ticker_clean]
+        avg_cost_basis = pos["average_buy_price"]
+        company_name = pos["company_name"]
+
+        proceeds = round(sell_price * quantity, 2)
+        cost_basis = round(avg_cost_basis * quantity, 2)
+        realized_pl = round(proceeds - cost_basis, 2)
+        return_pct = round((realized_pl / cost_basis) * 100, 2) if cost_basis > 0 else 0.0
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+        record = {
+            "Customer_id": customer_id,
+            "Ticker": ticker_clean,
+            "Company_Name": company_name,
+            "Transaction_Type": "SELL",
+            "Sell_Price": round(sell_price, 2),
+            "Quantity": quantity,
+            "Proceeds": proceeds,
+            "Cost_Basis": cost_basis,
+            "Realized_Profit_Loss": realized_pl,
+            "Return_Percentage": return_pct,
+            "Timestamp": timestamp
+        }
+
+        with open(self.summary_file, "a", newline="", encoding="utf-8") as f:
+            writer = csv.writer(f)
+            writer.writerow([
+                customer_id,
+                ticker_clean,
+                company_name,
+                f"{avg_cost_basis:.2f}",
+                -quantity,
+                f"{-cost_basis:.2f}",
+                f"{sell_price:.2f}",
+                f"{-proceeds:.2f}",
+                f"{realized_pl:.2f}",
+                timestamp
+            ])
+
+        return record
+
     def get_portfolio_for_customer(self, customer_id: str) -> List[Dict[str, Any]]:
         """
         Retrieve all purchase holdings for a specific customer ID.
@@ -453,11 +523,12 @@ class StockPortfolioManager:
             data["return_percentage"] = ret_pct
             total_portfolio_val += curr_val
 
-        for ticker, data in consolidated.items():
+        active_consolidated = {t: d for t, d in consolidated.items() if d["total_quantity"] > 0}
+        for ticker, data in active_consolidated.items():
             w = round((data["current_value"] / total_portfolio_val) * 100, 2) if total_portfolio_val > 0 else 0.0
             data["portfolio_weight"] = w
 
-        return consolidated
+        return active_consolidated
 
     def get_sector_allocation(self, customer_id: str) -> Dict[str, Dict[str, float]]:
         """Calculate total invested capital and portfolio percentage allocation per GICS sector."""
