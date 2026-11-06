@@ -1,7 +1,7 @@
 # Datheon Python Programming Internship
 
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)
-![Tests Status](https://img.shields.io/badge/tests-passing-brightgreen.svg)
+![Tests Status](https://img.shields.io/badge/tests-54%20passing-brightgreen.svg)
 ![Internship](https://img.shields.io/badge/Internship-Datheon-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)
 
@@ -17,38 +17,47 @@ As a B.Tech Computer Science and Engineering student specialising in Cybersecuri
 
 ### Quick Start (Unified Launcher)
 
-You can launch either project or run the complete automated test suite (30 passing tests) directly from the repository root using the unified launcher:
+You can launch either project or run the complete automated test suite (54 passing tests) directly from the repository root using the unified launcher:
 
 ```bash
 python run_project.py
 ```
+
+CLI options:
+- `python run_project.py --doctor` : Workspace integrity health check
+- `python run_project.py --stats`  : High-level metrics and dataset statistics
+- `python run_project.py --clean`  : Safely remove bytecode caches (`__pycache__`)
+- `python run_project.py --test`   : Run all automated unit test suites
 
 ---
 
 ## Projects
 
 ### Task 1: Hangman Game
-A terminal-based word-guessing game developed using Python featuring an object-oriented game engine, 7 ASCII gallows stages, duplicate prevention, and automated unit testing.
+A terminal-based word-guessing game developed using Python featuring an object-oriented game engine, 7 ASCII gallows stages, dynamic word complexity scoring, configurable hint budgets, round telemetry, and automated unit testing.
 
 **Concepts practised:**
 - Object-oriented programming & decoupled game logic
-- Random word selection from curated dictionary
-- Loops, conditional statements, and input validation
-- Tracking guessed letters and remaining attempts
-- Automated testing with Python standard `unittest`
+- Dynamic word complexity algorithm based on length and rare letter frequency
+- Configurable hint budgeting system with usage tracking
+- Round duration timer and per-session telemetry history
+- Tracking guessed letters, remaining attempts, and guess accuracy ratio
+- Automated testing with Python standard `unittest` (32 passing tests)
 
 - 🌟 **[View Task 1 – Hangman Game](./Hangman_Internship_Submission/)**
 
 ### Task 2: Stock Portfolio Tracker
-A menu-driven Python application designed to record stock transactions, validate tickers against the S&P 500 dataset, track real-time position values, calculate profit/loss, and format customer portfolios into clean ASCII tables.
+A modular Python application designed to record stock purchases and sales, validate tickers against the S&P 500 dataset, track real-time position values, calculate realized/unrealized profit/loss, consolidate multi-lot positions with weighted average cost basis, analyze sector concentration with the Herfindahl-Hirschman Index (HHI), and format customer portfolios into clean ASCII tables.
 
 **Concepts practised:**
 - Object-oriented programming & modular service architecture
+- Share sale capability with realized gain/loss calculation
+- Multi-lot position consolidation with weighted cost basis
+- Herfindahl-Hirschman Index (HHI) sector diversification risk profiling
 - S&P 500 dataset parsing and ticker validation
 - Resilient market pricing engine with standard library fallback
 - Unique customer ID generation and persistent file management
-- Consolidated portfolio financial metrics (Total Invested, Value, P/L, Return %)
-- Automated testing with Python standard `unittest`
+- Automated testing with Python standard `unittest` (19 passing tests)
 
 - 🌟 **[View Task 2 – Stock Portfolio Tracker](./Stock_Portfolio_Submission/)**
 
@@ -58,17 +67,22 @@ A menu-driven Python application designed to record stock transactions, validate
 graph TD
     Launcher[run_project.py CLI Launcher] --> Task1[Task 1: Hangman Game]
     Launcher --> Task2[Task 2: Stock Portfolio Tracker]
-    Launcher --> Tests[Automated Test Suite]
+    Launcher --> Tests[Automated Test Suite: 54 Tests]
 
     subgraph Task 1 Engine
         Task1 --> HangmanGame[HangmanGame State Machine]
         Task1 --> WordBank[english_words.txt Dictionary]
-        Task1 --> Streak[WinStreakTracker]
+        Task1 --> Complexity[Word Complexity Scorer]
+        Task1 --> Hints[Configurable Hint Budget]
+        Task1 --> Streak[WinStreakTracker & Telemetry History]
         Task1 --> Art[7 ASCII Gallows Stages]
     end
 
     subgraph Task 2 Engine
         Task2 --> Manager[StockPortfolioManager]
+        Task2 --> Sales[Share Sale & Realized P/L Engine]
+        Task2 --> Consolidation[Multi-Lot Cost Basis Consolidation]
+        Task2 --> Risk[Herfindahl Index Risk Profile]
         Task2 --> Dataset[company_dataset.csv 503 Companies]
         Task2 --> Market[MarketDataService Live/Offline Fallback]
         Task2 --> Ledger[portfolio_summary.csv Ledger]
@@ -111,14 +125,15 @@ python run_project.py --doctor
 
 ### Project Metrics & Verification Summary
 
-| Component | Task 1: Hangman Game | Task 2: Stock Portfolio Tracker |
-| :--- | :--- | :--- |
-| **Architecture** | Object-Oriented State Engine | Modular Financial & Market Service |
-| **Data Source** | 2,492 Curated English Words | 503 S&P 500 Companies Dataset |
-| **Test Framework** | Python Standard `unittest` | Python Standard `unittest` |
-| **Passing Tests** | 22 Passing Unit Tests | 11 Passing Unit Tests |
-| **Key Features** | 7 Gallows Stages, Win Streaks, Hints | Live/Offline Fallback, Sector Breakdown |
-| **Offline Ready** | 100% Standard Library | 100% Standard Library Fallback |
+| Component | Task 1: Hangman Game | Task 2: Stock Portfolio Tracker | Unified Launcher Suite |
+| :--- | :--- | :--- | :--- |
+| **Architecture** | Object-Oriented State Engine | Modular Financial & Market Service | CLI Orchestrator & Diagnostics |
+| **Data Source** | 2,492 Curated English Words | 503 S&P 500 Companies Dataset | Subprocess Runners |
+| **Test Framework** | Python Standard `unittest` | Python Standard `unittest` | Python Standard `unittest` |
+| **Passing Tests** | **32 Passing Unit Tests** | **19 Passing Unit Tests** | **3 Passing Unit Tests** |
+| **Total Test Count** | \multicolumn{3}{c|}{**54 Passing Unit Tests Across All Suites**} |
+| **Key Features** | 7 Gallows Stages, Hints Budget, Complexity Score | Consolidated Cost Basis, Sales, HHI Risk Profiling | `--doctor`, `--stats`, `--clean`, Menu |
+| **Offline Ready** | 100% Standard Library | 100% Standard Library Fallback | 100% Standard Library |
 
 ## Connect With Me
 
@@ -127,5 +142,3 @@ I'm a B.Tech CSE Cybersecurity student interested in Python programming, cyberse
 Thank you for visiting my repository!
 
 **Progress over perfection. Projects over theory.**
-
-
