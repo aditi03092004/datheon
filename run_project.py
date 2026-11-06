@@ -1,3 +1,28 @@
+"""
+Datheon Python Programming Internship - Unified Project Launcher
+Author: Aditi Hundre
+
+A unified CLI runner to easily execute Task 1 (Hangman Game),
+Task 2 (Stock Portfolio Tracker), run diagnostics, or run the complete automated test suite.
+"""
+
+import argparse
+import os
+import subprocess
+import sys
+from pathlib import Path
+
+
+BASE_DIR = Path(__file__).resolve().parent
+TASK_1_DIR = BASE_DIR / "Hangman_Internship_Submission"
+TASK_2_DIR = BASE_DIR / "Stock_Portfolio_Submission"
+
+
+def clear_console() -> None:
+    """Clear terminal screen in a cross-platform manner."""
+    os.system("cls" if os.name == "nt" else "clear")
+
+
 def run_project_doctor() -> bool:
     """Diagnostic routine checking workspace integrity and file accessibility."""
     print("=" * 60)
@@ -26,14 +51,12 @@ def run_project_doctor() -> bool:
     return all_ok
 
 
-import argparse
-
-def print_project_statistics():
+def print_project_statistics() -> None:
     """Display high-level metrics across Task 1 and Task 2."""
     words_file = TASK_1_DIR / "english_words.txt"
     dataset_file = TASK_2_DIR / "company_dataset.csv"
-    words_count = sum(1 for line in open(words_file, encoding='utf-8') if line.strip()) if words_file.exists() else 0
-    companies_count = sum(1 for line in open(dataset_file, encoding='utf-8', errors='ignore') if line.strip()) - 1 if dataset_file.exists() else 0
+    words_count = sum(1 for line in open(words_file, encoding="utf-8") if line.strip()) if words_file.exists() else 0
+    companies_count = sum(1 for line in open(dataset_file, encoding="utf-8", errors="ignore") if line.strip()) - 1 if dataset_file.exists() else 0
 
     print("=" * 60)
     print("      DATHEON INTERNSHIP PROJECT METRICS SUMMARY      ")
@@ -44,7 +67,8 @@ def print_project_statistics():
     print("=" * 60)
 
 
-def parse_cli_arguments():
+def parse_cli_arguments() -> argparse.Namespace:
+    """Configure and parse command-line flags."""
     parser = argparse.ArgumentParser(description="Datheon Internship Project CLI Launcher")
     parser.add_argument("--task1", action="store_true", help="Launch Task 1: Hangman Game directly")
     parser.add_argument("--task2", action="store_true", help="Launch Task 2: Stock Portfolio Tracker directly")
@@ -54,43 +78,20 @@ def parse_cli_arguments():
     parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.0")
     return parser.parse_args()
 
-"""
-Datheon Python Programming Internship - Unified Project Launcher
-Author: Aditi Hundre
 
-A unified CLI runner to easily execute Task 1 (Hangman Game),
-Task 2 (Stock Portfolio Tracker), or run the complete automated test suite.
-"""
-
-import os
-import subprocess
-import sys
-from pathlib import Path
-
-
-BASE_DIR = Path(__file__).resolve().parent
-TASK_1_DIR = BASE_DIR / "Hangman_Internship_Submission"
-TASK_2_DIR = BASE_DIR / "Stock_Portfolio_Submission"
-
-
-def clear_console():
-    """Clear terminal screen."""
-    os.system("cls" if os.name == "nt" else "clear")
-
-
-def run_hangman():
+def run_hangman() -> None:
     """Launch Task 1 Hangman game."""
     script_path = TASK_1_DIR / "hangman.py"
     subprocess.run([sys.executable, str(script_path)], cwd=str(TASK_1_DIR))
 
 
-def run_portfolio():
+def run_portfolio() -> None:
     """Launch Task 2 Stock Portfolio Tracker."""
     script_path = TASK_2_DIR / "portfolio.py"
     subprocess.run([sys.executable, str(script_path)], cwd=str(TASK_2_DIR))
 
 
-def run_all_tests():
+def run_all_tests() -> bool:
     """Execute unit test suites for both projects."""
     print("=" * 64)
     print("  RUNNING ALL AUTOMATED UNIT TESTS (STANDARD UNITTEST)  ")
@@ -109,14 +110,16 @@ def run_all_tests():
     )
 
     print("\n" + "=" * 64)
-    if res1.returncode == 0 and res2.returncode == 0:
-        print("  ALL 30 TEST CASES ACROSS BOTH PROJECTS PASSED SUCCESSFULLY!  ")
+    success = (res1.returncode == 0 and res2.returncode == 0)
+    if success:
+        print("  ALL TESTS ACROSS BOTH PROJECTS PASSED SUCCESSFULLY!  ")
     else:
         print("  SOME TESTS ENCOUNTERED FAILURES. PLEASE REVIEW OUTPUT ABOVE.  ")
     print("=" * 64)
+    return success
 
 
-def main():
+def main() -> None:
     args = parse_cli_arguments()
     if args.task1:
         run_hangman()
@@ -133,6 +136,7 @@ def main():
     if args.doctor:
         run_project_doctor()
         return
+
     while True:
         clear_console()
         print("=" * 60)
@@ -173,4 +177,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
