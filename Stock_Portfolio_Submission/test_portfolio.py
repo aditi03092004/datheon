@@ -306,6 +306,43 @@ class TestStockPortfolioTracker(unittest.TestCase):
         total_weight = sum(pos["portfolio_weight"] for pos in consolidated.values())
         self.assertAlmostEqual(total_weight, 100.0, delta=0.5)
 
+    def test_record_sale_and_realized_profit(self):
+        """Verify selling shares updates holdings and computes realized profit accurately."""
+        cid = self.manager.generate_customer_id()
+        # Buy 10 shares @ $150
+        self.manager.record_transaction(cid, "AAPL", 150.0, 10)
+
+        # 1. Partial sale of 4 shares @ $180
+        sale = self.manager.record_sale(cid, "AAPL", sell_price=180.0, quantity=4)
+        self.assertEqual(sale["Quantity"], 4)
+        self.assertEqual(sale["Proceeds"], 720.0)
+        self.assertEqual(sale["Cost_Basis"], 600.0)
+        self.assertEqual(sale["Realized_Profit_Loss"], 120.0)
+        self.assertEqual(sale["Return_Percentage"], 20.0)
+
+        # Active holdings should now show 6 shares
+        holdings = self.manager.get_consolidated_holdings(cid)
+        self.assertEqual(holdings["AAPL"]["total_quantity"], 6)
+
+        # 2. Oversell attempt (requesting 10 when 6 remain)
+        with self.assertRaises(InvalidTransactionError):
+            self.manager.record_sale(cid, "AAPL", sell_price=180.0, quantity=10)
+
+        # 3. Selling unowned ticker
+        with self.assertRaises(InvalidTransactionError):
+            self.manager.record_sale(cid, "TSLA", sell_price=200.0, quantity=1)
+
+        # 4. Invalid prices / quantities
+        with self.assertRaises(InvalidTransactionError):
+            self.manager.record_sale(cid, "AAPL", sell_price=-10.0, quantity=1)
+        with self.assertRaises(InvalidTransactionError):
+            self.manager.record_sale(cid, "AAPL", sell_price=100.0, quantity=0)
+
+        # 5. Sell remaining 6 shares: position closes completely
+        self.manager.record_sale(cid, "AAPL", sell_price=150.0, quantity=6)
+        active_after = self.manager.get_consolidated_holdings(cid)
+        self.assertNotIn("AAPL", active_after)
+
 
 if __name__ == "__main__":
     unittest.main()
