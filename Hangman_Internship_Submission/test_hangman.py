@@ -382,6 +382,47 @@ class TestWordComplexity(unittest.TestCase):
         game = HangmanGame(secret_word="cyber")
         self.assertEqual(game.complexity_score, calculate_word_complexity("cyber"))
 
+
+class TestWinStreakTracker(unittest.TestCase):
+    """Tests win streak, round telemetry, and aggregated session performance metrics."""
+
+    def test_streak_progression_and_reset(self):
+        """Verify current streak increments on win and resets to 0 on loss."""
+        tracker = WinStreakTracker()
+        self.assertEqual(tracker.current_streak, 0)
+        self.assertEqual(tracker.highest_streak, 0)
+
+        tracker.record_result(True)
+        self.assertEqual(tracker.current_streak, 1)
+        self.assertEqual(tracker.highest_streak, 1)
+
+        tracker.record_result(True)
+        self.assertEqual(tracker.current_streak, 2)
+        self.assertEqual(tracker.highest_streak, 2)
+
+        tracker.record_result(False)
+        self.assertEqual(tracker.current_streak, 0)
+        self.assertEqual(tracker.highest_streak, 2)
+        self.assertEqual(tracker.win_rate, 66.67)
+
+    def test_session_history_and_aggregate_metrics(self):
+        """Verify per-round history logging, average accuracy, and total duration."""
+        tracker = WinStreakTracker()
+        tracker.record_result(True, word="python", duration=12.4, accuracy=80.0)
+        tracker.record_result(False, word="kernel", duration=18.6, accuracy=40.0)
+
+        self.assertEqual(len(tracker.history), 2)
+        self.assertEqual(tracker.history[0]["word"], "python")
+        self.assertEqual(tracker.total_duration, 31.0)
+        self.assertEqual(tracker.average_accuracy, 60.0)
+
+        summary = tracker.get_session_summary()
+        self.assertEqual(summary["total_games"], 2)
+        self.assertEqual(summary["total_wins"], 1)
+        self.assertEqual(summary["average_accuracy"], 60.0)
+        self.assertEqual(summary["total_duration"], 31.0)
+        self.assertEqual(len(summary["rounds"]), 2)
+
 if __name__ == "__main__":
     unittest.main()
 
