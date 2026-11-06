@@ -272,14 +272,21 @@ class TestHangmanArtStages(unittest.TestCase):
                 game.process_guess(wrong_guesses[i])
 
 
-def test_safe_input_behavior(self):
-        """Verify safe_input returns default value on EOFError."""
+class TestHangmanUtilitiesAndAccuracy(unittest.TestCase):
+    """Tests utility helpers and guess accuracy metric calculations."""
+
+    def test_safe_input_behavior(self):
+        """Verify safe_input returns default value on EOFError and strips valid input."""
+        from unittest.mock import patch
         from hangman import safe_input
-        val = safe_input("Test: ", default="mock_default")
-        self.assertIsInstance(val, str)
+        with patch("builtins.input", side_effect=EOFError):
+            val = safe_input("Test: ", default="mock_default")
+            self.assertEqual(val, "mock_default")
+        with patch("builtins.input", return_value="  valid_input  "):
+            val = safe_input("Test: ", default="mock_default")
+            self.assertEqual(val, "valid_input")
 
-
-def test_guess_accuracy_calculation(self):
+    def test_guess_accuracy_calculation(self):
         """Verify accuracy percentage calculation based on correct and total guesses."""
         game = HangmanGame(secret_word="code")
         self.assertEqual(game.guess_accuracy, 0.0)

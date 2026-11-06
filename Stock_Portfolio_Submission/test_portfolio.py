@@ -198,7 +198,7 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertIsInstance(source, str)
 
 
-def test_sector_allocation(self):
+    def test_sector_allocation(self):
         """Verify sector allocation correctly aggregates invested amounts and percentages."""
         cid = self.manager.generate_customer_id()
         self.manager.record_transaction(cid, "AAPL", 100.0, 1)
@@ -210,7 +210,7 @@ def test_sector_allocation(self):
         self.assertEqual(alloc["Information Technology"]["percentage"], 100.0)
 
 
-def test_validate_and_repair_storage(self):
+    def test_validate_and_repair_storage(self):
         """Verify storage repair recovers valid entries and filters truncated rows."""
         cid = self.manager.generate_customer_id()
         self.manager.record_transaction(cid, "AAPL", 150.0, 2)
@@ -223,7 +223,7 @@ def test_validate_and_repair_storage(self):
         self.assertEqual(len(holdings), 1)
 
 
-def test_profitable_and_losing_filters(self):
+    def test_profitable_and_losing_filters(self):
         """Verify filtering of profitable vs losing holdings."""
         cid = self.manager.generate_customer_id()
         self.manager.record_transaction(cid, "AAPL", 150.0, 1)
@@ -232,7 +232,7 @@ def test_profitable_and_losing_filters(self):
         self.assertEqual(len(profitable) + len(losing), 1)
 
 
-def test_rebalancing_suggestions(self):
+    def test_rebalancing_suggestions(self):
         """Verify portfolio concentration alerts trigger when sector allocation exceeds threshold."""
         cid = self.manager.generate_customer_id()
         self.manager.record_transaction(cid, "AAPL", 100.0, 1)  # 100% Tech
@@ -246,7 +246,7 @@ def test_rebalancing_suggestions(self):
         self.assertEqual(len(no_alerts), 0)
 
 
-def test_find_transactions_by_ticker(self):
+    def test_find_transactions_by_ticker(self):
         """Verify historical transactions are filterable by specific ticker symbol."""
         cid = self.manager.generate_customer_id()
         self.manager.record_transaction(cid, "AAPL", 150.0, 1)
@@ -261,7 +261,7 @@ def test_find_transactions_by_ticker(self):
         self.assertEqual(len(aapl_lower), 1)
 
 
-def test_weighted_return_percentage(self):
+    def test_weighted_return_percentage(self):
         """Verify portfolio weighted average return on invested capital."""
         cid = self.manager.generate_customer_id()
         self.manager.record_transaction(cid, "AAPL", 100.0, 1)
@@ -269,7 +269,7 @@ def test_weighted_return_percentage(self):
         self.assertIsInstance(w_ret, float)
 
 
-def test_export_customer_csv(self):
+    def test_export_customer_csv(self):
         """Verify exporting filtered customer holdings to a dedicated CSV file."""
         cid = self.manager.generate_customer_id()
         self.manager.record_transaction(cid, "AAPL", 150.0, 1)
