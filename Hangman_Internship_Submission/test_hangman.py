@@ -17,6 +17,7 @@ from hangman import (
     GuessResult,
     HangmanGame,
     HANGMAN_STAGES,
+    calculate_word_complexity,
     filter_words_by_difficulty,
     load_words,
 )
@@ -348,6 +349,38 @@ class TestGameTimer(unittest.TestCase):
         self.assertEqual(duration, timer.elapsed_seconds)
         self.assertIsNotNone(timer.end_time)
 
+
+
+class TestWordComplexity(unittest.TestCase):
+    """Tests word complexity scoring algorithm and boundary rules."""
+
+    def test_empty_and_whitespace_complexity(self):
+        """Verify empty and whitespace strings return 0.0."""
+        self.assertEqual(calculate_word_complexity(""), 0.0)
+        self.assertEqual(calculate_word_complexity("   "), 0.0)
+
+    def test_non_alphabetic_raises_value_error(self):
+        """Verify non-alphabetic words raise ValueError."""
+        with self.assertRaises(ValueError):
+            calculate_word_complexity("word123")
+        with self.assertRaises(ValueError):
+            calculate_word_complexity("hello-world")
+
+    def test_complexity_monotonicity_and_bounds(self):
+        """Verify score bounds and relative complexity ranking."""
+        score_simple = calculate_word_complexity("cat")
+        score_complex = calculate_word_complexity("cryptography")
+        score_rare = calculate_word_complexity("quartz")
+
+        self.assertGreaterEqual(score_simple, 1.0)
+        self.assertLessEqual(score_complex, 10.0)
+        self.assertGreater(score_complex, score_simple)
+        self.assertGreater(score_rare, score_simple)
+
+    def test_game_complexity_property(self):
+        """Verify HangmanGame exposes complexity_score matching calculate_word_complexity."""
+        game = HangmanGame(secret_word="cyber")
+        self.assertEqual(game.complexity_score, calculate_word_complexity("cyber"))
 
 if __name__ == "__main__":
     unittest.main()
