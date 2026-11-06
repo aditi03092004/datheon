@@ -203,6 +203,43 @@ class TestHangmanGameLogic(unittest.TestCase):
             game.process_guess(ch)
         self.assertIsNone(game.get_hint())
 
+    def test_hint_budget_enforcement(self):
+        """Verify hint budget decrements and returns None when exhausted."""
+        game = HangmanGame(secret_word="planet", max_hints=2)
+        self.assertEqual(game.max_hints, 2)
+        self.assertEqual(game.hints_used, 0)
+        self.assertEqual(game.remaining_hints, 2)
+
+        # First hint
+        h1 = game.get_hint()
+        self.assertIsNotNone(h1)
+        self.assertEqual(game.hints_used, 1)
+        self.assertEqual(game.remaining_hints, 1)
+
+        # Second hint
+        h2 = game.get_hint()
+        self.assertIsNotNone(h2)
+        self.assertEqual(game.hints_used, 2)
+        self.assertEqual(game.remaining_hints, 0)
+
+        # Third attempt: budget exhausted, returns None
+        h3 = game.get_hint()
+        self.assertIsNone(h3)
+        self.assertEqual(game.remaining_hints, 0)
+
+    def test_hint_budget_custom_and_peek(self):
+        """Verify non-consuming peek and negative hint budget validation."""
+        game = HangmanGame(secret_word="orbit", max_hints=1)
+        # Peeking without consuming budget
+        peeked = game.get_hint(consume_budget=False)
+        self.assertIsNotNone(peeked)
+        self.assertEqual(game.hints_used, 0)
+        self.assertEqual(game.remaining_hints, 1)
+
+        # Negative hints should raise ValueError
+        with self.assertRaises(ValueError):
+            HangmanGame(secret_word="orbit", max_hints=-1)
+
 
 class TestHangmanWinAndLossConditions(unittest.TestCase):
     """Tests game termination scenarios: winning and losing."""
