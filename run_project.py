@@ -51,6 +51,26 @@ def run_project_doctor() -> bool:
     return all_ok
 
 
+def clean_project_cache() -> int:
+    """Safely remove __pycache__ directories and compiled bytecode files across the repository."""
+    cleaned_count = 0
+    for root, dirs, files in os.walk(BASE_DIR):
+        for d in list(dirs):
+            if d == "__pycache__":
+                cache_dir = Path(root) / d
+                try:
+                    for child in cache_dir.iterdir():
+                        child.unlink()
+                    cache_dir.rmdir()
+                    cleaned_count += 1
+                except Exception:
+                    pass
+    print("=" * 60)
+    print(f" Cache Cleanup Complete: Removed {cleaned_count} __pycache__ folders.")
+    print("=" * 60)
+    return cleaned_count
+
+
 def print_project_statistics() -> None:
     """Display high-level metrics across Task 1 and Task 2."""
     words_file = TASK_1_DIR / "english_words.txt"
@@ -75,6 +95,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--test", action="store_true", help="Run automated test suites and exit")
     parser.add_argument("--doctor", action="store_true", help="Run system diagnostics and verify file integrity")
     parser.add_argument("--stats", action="store_true", help="Display internship project metrics and statistics")
+    parser.add_argument("--clean", action="store_true", help="Clean Python bytecode caches and temporary artifacts")
     parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.0")
     return parser.parse_args()
 
@@ -136,6 +157,9 @@ def main() -> None:
     if args.doctor:
         run_project_doctor()
         return
+    if args.clean:
+        clean_project_cache()
+        return
 
     while True:
         clear_console()
@@ -145,7 +169,9 @@ def main() -> None:
         print(" 1. Launch Task 1: Hangman Game")
         print(" 2. Launch Task 2: Stock Portfolio Tracker")
         print(" 3. Run All Automated Tests (Task 1 & Task 2)")
-        print(" 4. Exit")
+        print(" 4. Run System Diagnostics (Doctor)")
+        print(" 5. Clean Bytecode Caches (__pycache__)")
+        print(" 6. Exit")
         print("-" * 60)
 
         try:
@@ -164,10 +190,16 @@ def main() -> None:
             clear_console()
             run_all_tests()
         elif choice == "4":
+            clear_console()
+            run_project_doctor()
+        elif choice == "5":
+            clear_console()
+            clean_project_cache()
+        elif choice == "6":
             print("\nThank you for exploring this submission. Goodbye!\n")
             break
         else:
-            print("\nInvalid choice. Please select 1, 2, 3, or 4.")
+            print("\nInvalid choice. Please select 1 through 6.")
 
         try:
             input("\nPress Enter to return to launcher menu...")

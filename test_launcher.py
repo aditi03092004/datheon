@@ -4,7 +4,7 @@ Automated unit tests for unified project launcher run_project.py.
 
 import unittest
 from pathlib import Path
-from run_project import BASE_DIR, TASK_1_DIR, TASK_2_DIR
+from run_project import BASE_DIR, TASK_1_DIR, TASK_2_DIR, clean_project_cache, run_project_doctor
 
 
 class TestLauncherConfiguration(unittest.TestCase):
@@ -17,8 +17,13 @@ class TestLauncherConfiguration(unittest.TestCase):
 
     def test_run_project_doctor(self):
         """Verify doctor health-check passes in valid workspace."""
-        from run_project import run_project_doctor
         self.assertTrue(run_project_doctor())
+
+    def test_clean_project_cache(self):
+        """Verify clean_project_cache executes safely and returns non-negative integer."""
+        result = clean_project_cache()
+        self.assertIsInstance(result, int)
+        self.assertGreaterEqual(result, 0)
 
 
 if __name__ == "__main__":
