@@ -395,6 +395,70 @@ class StockPortfolioManager:
                     })
         return holdings
 
+    def get_consolidated_holdings(self, customer_id: str) -> Dict[str, Dict[str, Any]]:
+        """
+        Aggregate customer holdings by ticker, computing total quantity,
+        weighted average cost basis (buy price), total investment, current valuation,
+        unrealized profit/loss, and portfolio weight.
+
+        Returns:
+            Dict[str, Dict[str, Any]]: Dictionary keyed by uppercase ticker symbol.
+        """
+        raw_holdings = self.get_portfolio_for_customer(customer_id)
+        if not raw_holdings:
+            return {}
+
+        consolidated: Dict[str, Dict[str, Any]] = {}
+        total_portfolio_val = 0.0
+
+        for item in raw_holdings:
+            ticker = item["Ticker"].upper()
+            qty = item["Quantity"]
+            inv = item["Investment"]
+
+            if ticker not in consolidated:
+                company_info = self.validate_ticker(ticker)
+                sector = company_info["sector"] if company_info else "General"
+                consolidated[ticker] = {
+                    "ticker": ticker,
+                    "company_name": item["Company_Name"],
+                    "sector": sector,
+                    "total_quantity": 0,
+                    "total_invested": 0.0,
+                    "current_price": item["Current_price"],
+                    "current_value": 0.0,
+                    "profit_loss": 0.0,
+                    "average_buy_price": 0.0,
+                    "return_percentage": 0.0,
+                    "portfolio_weight": 0.0,
+                }
+
+            consolidated[ticker]["total_quantity"] += qty
+            consolidated[ticker]["total_invested"] = round(consolidated[ticker]["total_invested"] + inv, 2)
+            consolidated[ticker]["current_price"] = item["Current_price"]
+
+        for ticker, data in consolidated.items():
+            qty = data["total_quantity"]
+            tot_inv = data["total_invested"]
+            curr_p = data["current_price"]
+
+            avg_buy = round(tot_inv / qty, 2) if qty > 0 else 0.0
+            curr_val = round(curr_p * qty, 2)
+            pl = round(curr_val - tot_inv, 2)
+            ret_pct = round((pl / tot_inv) * 100, 2) if tot_inv > 0 else 0.0
+
+            data["average_buy_price"] = avg_buy
+            data["current_value"] = curr_val
+            data["profit_loss"] = pl
+            data["return_percentage"] = ret_pct
+            total_portfolio_val += curr_val
+
+        for ticker, data in consolidated.items():
+            w = round((data["current_value"] / total_portfolio_val) * 100, 2) if total_portfolio_val > 0 else 0.0
+            data["portfolio_weight"] = w
+
+        return consolidated
+
     def get_sector_allocation(self, customer_id: str) -> Dict[str, Dict[str, float]]:
         """Calculate total invested capital and portfolio percentage allocation per GICS sector."""
         holdings = self.get_portfolio_for_customer(customer_id)
