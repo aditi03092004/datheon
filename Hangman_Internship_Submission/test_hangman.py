@@ -423,6 +423,27 @@ class TestWinStreakTracker(unittest.TestCase):
         self.assertEqual(summary["total_duration"], 31.0)
         self.assertEqual(len(summary["rounds"]), 2)
 
+
+class TestWordLinguisticMetrics(unittest.TestCase):
+    """Tests linguistic metrics calculation on HangmanGame."""
+
+    def test_vowel_and_consonant_counts(self):
+        """Verify vowel and consonant count calculations."""
+        game_standard = HangmanGame(secret_word="python")
+        self.assertEqual(game_standard.vowel_count, 1)
+        self.assertEqual(game_standard.consonant_count, 5)
+        self.assertEqual(game_standard.vowel_ratio, 0.17)
+
+        game_vowels = HangmanGame(secret_word="queue")
+        self.assertEqual(game_vowels.vowel_count, 4)
+        self.assertEqual(game_vowels.consonant_count, 1)
+        self.assertEqual(game_vowels.vowel_ratio, 0.8)
+
+        game_no_vowels = HangmanGame(secret_word="rhythm")
+        self.assertEqual(game_no_vowels.vowel_count, 0)
+        self.assertEqual(game_no_vowels.consonant_count, 6)
+        self.assertEqual(game_no_vowels.vowel_ratio, 0.0)
+
 if __name__ == "__main__":
     unittest.main()
 
