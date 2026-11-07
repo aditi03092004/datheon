@@ -666,6 +666,26 @@ class StockPortfolioManager:
     def get_losing_positions(self, customer_id: str) -> List[Dict[str, Any]]:
         """Filter and return only positions currently at a net loss (P/L < 0)."""
         return [h for h in self.get_portfolio_for_customer(customer_id) if h["Profit_Loss"] < 0]
+    def get_top_performing_position(self, customer_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve the customer holding position with the highest return on investment percentage."""
+        holdings = self.get_portfolio_for_customer(customer_id)
+        if not holdings:
+            return None
+        return max(
+            holdings,
+            key=lambda h: (h["Profit_Loss"] / h["Investment"]) if h.get("Investment", 0) > 0 else float("-inf")
+        )
+
+    def get_worst_performing_position(self, customer_id: str) -> Optional[Dict[str, Any]]:
+        """Retrieve the customer holding position with the lowest return on investment percentage."""
+        holdings = self.get_portfolio_for_customer(customer_id)
+        if not holdings:
+            return None
+        return min(
+            holdings,
+            key=lambda h: (h["Profit_Loss"] / h["Investment"]) if h.get("Investment", 0) > 0 else float("inf")
+        )
+
 
     def find_transactions_by_ticker(self, ticker: str) -> List[Dict[str, Any]]:
         """Filter and return all historical transactions matching a specific ticker."""
