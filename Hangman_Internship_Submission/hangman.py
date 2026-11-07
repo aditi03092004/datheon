@@ -411,6 +411,23 @@ class HangmanGame:
         if not self.guessed_letters:
             return 0.0
         return round((self.correct_guesses_count / len(self.guessed_letters)) * 100, 1)
+    @property
+    def vowel_count(self) -> int:
+        """Total number of vowels (a, e, i, o, u) in the secret word."""
+        return sum(1 for ch in self.secret_word if ch in "aeiou")
+
+    @property
+    def consonant_count(self) -> int:
+        """Total number of consonants in the secret word."""
+        return len(self.secret_word) - self.vowel_count
+
+    @property
+    def vowel_ratio(self) -> float:
+        """Ratio of vowels to total letters in secret word rounded to 2 decimal places."""
+        if not self.secret_word:
+            return 0.0
+        return round(self.vowel_count / len(self.secret_word), 2)
+
 
     def is_over(self) -> bool:
         """Check if the game has ended (either won or lost)."""
