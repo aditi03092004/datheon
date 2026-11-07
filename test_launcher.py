@@ -25,6 +25,15 @@ class TestLauncherConfiguration(unittest.TestCase):
         self.assertIsInstance(result, int)
         self.assertGreaterEqual(result, 0)
 
+    def test_print_consolidated_summary(self):
+        """Verify consolidated summary prints cleanly without exception."""
+        from run_project import print_consolidated_summary
+        try:
+            print_consolidated_summary()
+        except Exception as e:
+            self.fail(f"print_consolidated_summary raised {e}")
+
+
 
 if __name__ == "__main__":
     unittest.main()
