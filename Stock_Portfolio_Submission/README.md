@@ -87,3 +87,8 @@ To run the automated tests:
 cd "c:\Users\Aditi hundre\Downloads\Datheon_Python_Programming_Internship-main\Hangman_Reference\Stock_Portfolio_Submission"
 python -m unittest test_portfolio.py -v
 ```
+
+### Position Performance Ranking Analytics
+The `StockPortfolioManager` includes position ranking analytics for rapid portfolio evaluation:
+- **`get_top_performing_position(customer_id)`**: Identifies the single holding generating the highest percentage return on investment.
+- **`get_worst_performing_position(customer_id)`**: Identifies the position with the lowest percentage return to support risk rebalancing and tax-loss evaluation.
