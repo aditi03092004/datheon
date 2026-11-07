@@ -379,6 +379,29 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertTrue(risk_div["is_diversified"])
 
 
+
+    def test_top_and_worst_performing_positions(self):
+        """Verify extraction of highest and lowest performing positions by return percentage."""
+        cid = self.manager.generate_customer_id()
+
+        # Empty portfolio returns None
+        self.assertIsNone(self.manager.get_top_performing_position(cid))
+        self.assertIsNone(self.manager.get_worst_performing_position(cid))
+
+        # Record 2 distinct transactions
+        self.manager.record_transaction(cid, "AAPL", 150.0, 2)
+        self.manager.record_transaction(cid, "MSFT", 250.0, 1)
+
+        holdings = self.manager.get_portfolio_for_customer(cid)
+        self.assertEqual(len(holdings), 2)
+
+        top_pos = self.manager.get_top_performing_position(cid)
+        worst_pos = self.manager.get_worst_performing_position(cid)
+        self.assertIsNotNone(top_pos)
+        self.assertIsNotNone(worst_pos)
+        self.assertIn(top_pos["Ticker"], ["AAPL", "MSFT"])
+        self.assertIn(worst_pos["Ticker"], ["AAPL", "MSFT"])
+
 if __name__ == "__main__":
     unittest.main()
 
