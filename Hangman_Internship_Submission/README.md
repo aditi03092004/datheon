@@ -83,3 +83,9 @@ To run the automated tests:
 cd "c:\Users\Aditi hundre\Downloads\Datheon_Python_Programming_Internship-main\Hangman_Reference\Hangman_Internship_Submission"
 python -m unittest test_hangman.py -v
 ```
+
+### Linguistic & Vowel Density Metrics
+The `HangmanGame` engine computes real-time linguistic structure metrics for every target word:
+- **`vowel_count`**: Total count of vowels (`a, e, i, o, u`) in the secret target word.
+- **`consonant_count`**: Total count of consonant letters.
+- **`vowel_ratio`**: Ratio of vowel density (vowels / total length), aiding phonetic difficulty profiling.
