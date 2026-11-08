@@ -415,6 +415,16 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertEqual(self.manager.get_total_invested_capital(cid), 200.0)
         self.assertIsInstance(self.manager.get_unrealized_profit_percentage(cid), float)
 
+    def test_sector_company_counts_distribution(self):
+        """Verify sector company counts aggregate all loaded S&P 500 companies."""
+        counts = self.manager.get_sector_company_counts()
+        self.assertIsInstance(counts, dict)
+        self.assertGreater(len(counts), 5)
+        total_companies_in_sectors = sum(counts.values())
+        self.assertEqual(total_companies_in_sectors, len(self.manager.company_dataset))
+        self.assertIn("Information Technology", counts)
+
+
 
 if __name__ == "__main__":
     unittest.main()
