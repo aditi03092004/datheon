@@ -92,3 +92,8 @@ python -m unittest test_portfolio.py -v
 The `StockPortfolioManager` includes position ranking analytics for rapid portfolio evaluation:
 - **`get_top_performing_position(customer_id)`**: Identifies the single holding generating the highest percentage return on investment.
 - **`get_worst_performing_position(customer_id)`**: Identifies the position with the lowest percentage return to support risk rebalancing and tax-loss evaluation.
+
+### Capital Aggregators & Sector Company Breakdown
+- **`get_total_invested_capital(customer_id)`**: Calculates the sum of all invested funds across active positions.
+- **`get_unrealized_profit_percentage(customer_id)`**: Computes aggregate unrealized return percentage for an entire customer portfolio.
+- **`get_sector_company_counts()`**: Tallies the total distribution of companies in the S&P 500 dataset across each economic sector.
