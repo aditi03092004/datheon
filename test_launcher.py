@@ -33,6 +33,15 @@ class TestLauncherConfiguration(unittest.TestCase):
         except Exception as e:
             self.fail(f"print_consolidated_summary raised {e}")
 
+    def test_run_benchmark(self):
+        """Verify run_benchmark executes safely without uncaught exception."""
+        from run_project import run_benchmark
+        try:
+            run_benchmark()
+        except Exception as e:
+            self.fail(f"run_benchmark raised {e}")
+
+
 
 
 if __name__ == "__main__":
