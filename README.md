@@ -24,11 +24,12 @@ python run_project.py
 ```
 
 CLI options:
-- `python run_project.py --doctor`  : Workspace integrity health check
-- `python run_project.py --stats`   : High-level metrics and dataset statistics
-- `python run_project.py --summary` : Consolidated features and metrics snapshot
-- `python run_project.py --clean`   : Safely remove bytecode caches (`__pycache__`)
-- `python run_project.py --test`    : Run all automated unit test suites
+- `python run_project.py --doctor`    : Workspace integrity health check
+- `python run_project.py --stats`     : High-level metrics and dataset statistics
+- `python run_project.py --summary`   : Consolidated features and metrics snapshot
+- `python run_project.py --benchmark` : Run test suites with runtime performance benchmark
+- `python run_project.py --clean`     : Safely remove bytecode caches (`__pycache__`)
+- `python run_project.py --test`      : Run all automated unit test suites
 
 ---
 
