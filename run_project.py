@@ -72,6 +72,19 @@ def clean_project_cache() -> int:
 
 
 
+
+def run_benchmark() -> None:
+    """Execute benchmark measuring unit test run duration and suite throughput."""
+    import time
+    print("=" * 60)
+    print("       DATHEON INTERNSHIP SUITE EXECUTION BENCHMARK       ")
+    print("=" * 60)
+    start_time = time.perf_counter()
+    success = run_all_tests()
+    elapsed = time.perf_counter() - start_time
+    print(f"\nBenchmark Result: All test suites executed in {elapsed:.3f} seconds.")
+    print("=" * 60)
+
 def print_consolidated_summary() -> None:
     """Print consolidated metrics snapshot across both tasks."""
     print("=" * 60)
@@ -107,6 +120,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--doctor", action="store_true", help="Run system diagnostics and verify file integrity")
     parser.add_argument("--stats", action="store_true", help="Display internship project metrics and statistics")
     parser.add_argument("--summary", action="store_true", help="Display consolidated internship snapshot")
+    parser.add_argument("--benchmark", action="store_true", help="Run automated test suite with performance benchmark timing")
     parser.add_argument("--clean", action="store_true", help="Clean Python bytecode caches and temporary artifacts")
     parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.0")
     return parser.parse_args()
@@ -168,6 +182,9 @@ def main() -> None:
         return
     if args.summary:
         print_consolidated_summary()
+        return
+    if args.benchmark:
+        run_benchmark()
         return
     if args.doctor:
         run_project_doctor()
