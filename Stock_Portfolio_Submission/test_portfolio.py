@@ -402,6 +402,20 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertIn(top_pos["Ticker"], ["AAPL", "MSFT"])
         self.assertIn(worst_pos["Ticker"], ["AAPL", "MSFT"])
 
+    def test_unrealized_profit_and_invested_capital(self):
+        """Verify calculation of total invested capital and aggregate unrealized return percentage."""
+        cid = self.manager.generate_customer_id()
+
+        # Empty portfolio has zero invested capital and return
+        self.assertEqual(self.manager.get_total_invested_capital(cid), 0.0)
+        self.assertEqual(self.manager.get_unrealized_profit_percentage(cid), 0.0)
+
+        # Record a transaction: 2 shares at $100 -> $200 invested
+        self.manager.record_transaction(cid, "AAPL", 100.0, 2)
+        self.assertEqual(self.manager.get_total_invested_capital(cid), 200.0)
+        self.assertIsInstance(self.manager.get_unrealized_profit_percentage(cid), float)
+
+
 if __name__ == "__main__":
     unittest.main()
 
