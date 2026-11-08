@@ -427,6 +427,23 @@ class HangmanGame:
         if not self.secret_word:
             return 0.0
         return round(self.vowel_count / len(self.secret_word), 2)
+    @property
+    def letter_frequencies(self) -> dict[str, int]:
+        """Mapping of unique letters in the secret word to their occurrence frequencies."""
+        freq: dict[str, int] = {}
+        for ch in self.secret_word:
+            freq[ch] = freq.get(ch, 0) + 1
+        return freq
+
+    @property
+    def most_frequent_letter(self) -> tuple[str, int]:
+        """Return the most frequent letter and its count in the secret word."""
+        freqs = self.letter_frequencies
+        if not freqs:
+            return ("", 0)
+        top_char = max(freqs, key=lambda k: (freqs[k], -ord(k)))
+        return (top_char, freqs[top_char])
+
 
 
     def is_over(self) -> bool:
