@@ -328,12 +328,13 @@ class HangmanGame:
         """Returns the calculated complexity score (1.0 - 10.0) of the secret word."""
         return calculate_word_complexity(self.secret_word)
 
-    def get_masked_word(self) -> str:
+    def get_masked_word(self, placeholder: str = "_") -> str:
         """
         Generate the masked word string with spaces.
         Example: 'p y _ h _ n' for secret word 'python' with guesses {'p', 'y', 'h'}.
+        Allows optional custom placeholder string (default: '_').
         """
-        return " ".join([char if char in self.guessed_letters else "_" for char in self.secret_word])
+        return " ".join([char if char in self.guessed_letters else placeholder for char in self.secret_word])
 
     def get_sorted_guessed_letters(self) -> list[str]:
         """Returns a sorted list of all unique letters guessed so far."""
