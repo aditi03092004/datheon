@@ -444,6 +444,20 @@ class TestWordLinguisticMetrics(unittest.TestCase):
         self.assertEqual(game_no_vowels.consonant_count, 6)
         self.assertEqual(game_no_vowels.vowel_ratio, 0.0)
 
+    def test_letter_frequencies_and_most_frequent(self):
+        """Verify calculation of letter occurrence frequencies and modal character."""
+        game_banana = HangmanGame(secret_word="banana")
+        freqs = game_banana.letter_frequencies
+        self.assertEqual(freqs, {"b": 1, "a": 3, "n": 2})
+        self.assertEqual(game_banana.most_frequent_letter, ("a", 3))
+
+        game_unique = HangmanGame(secret_word="cyber")
+        freqs_unique = game_unique.letter_frequencies
+        self.assertEqual(len(freqs_unique), 5)
+        for count in freqs_unique.values():
+            self.assertEqual(count, 1)
+
+
 if __name__ == "__main__":
     unittest.main()
 
