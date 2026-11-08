@@ -89,3 +89,8 @@ The `HangmanGame` engine computes real-time linguistic structure metrics for eve
 - **`vowel_count`**: Total count of vowels (`a, e, i, o, u`) in the secret target word.
 - **`consonant_count`**: Total count of consonant letters.
 - **`vowel_ratio`**: Ratio of vowel density (vowels / total length), aiding phonetic difficulty profiling.
+
+### Letter Frequency Profiling & Display Formatting
+- **`letter_frequencies`**: Returns an exact frequency dictionary of every character in the target word.
+- **`most_frequent_letter`**: Automatically identifies the modal character and its occurrence count.
+- **`get_masked_word(placeholder='_')`**: Generates a spaced string with configurable masking symbols (`*`, `.`, `-`).
