@@ -444,6 +444,16 @@ class TestWordLinguisticMetrics(unittest.TestCase):
         self.assertEqual(game_no_vowels.consonant_count, 6)
         self.assertEqual(game_no_vowels.vowel_ratio, 0.0)
 
+    def test_custom_placeholder_masked_word(self):
+        """Verify get_masked_word properly accepts and renders custom placeholders."""
+        game = HangmanGame(secret_word="python")
+        game.process_guess("p")
+        game.process_guess("y")
+        self.assertEqual(game.get_masked_word(), "p y _ _ _ _")
+        self.assertEqual(game.get_masked_word(placeholder="*"), "p y * * * *")
+        self.assertEqual(game.get_masked_word(placeholder="."), "p y . . . .")
+
+
     def test_letter_frequencies_and_most_frequent(self):
         """Verify calculation of letter occurrence frequencies and modal character."""
         game_banana = HangmanGame(secret_word="banana")
