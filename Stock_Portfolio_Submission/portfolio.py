@@ -685,6 +685,20 @@ class StockPortfolioManager:
             holdings,
             key=lambda h: (h["Profit_Loss"] / h["Investment"]) if h.get("Investment", 0) > 0 else float("inf")
         )
+    def get_total_invested_capital(self, customer_id: str) -> float:
+        """Calculate total amount of invested capital across active holdings for customer."""
+        holdings = self.get_portfolio_for_customer(customer_id)
+        return round(sum(h["Investment"] for h in holdings), 2)
+
+    def get_unrealized_profit_percentage(self, customer_id: str) -> float:
+        """Calculate aggregate unrealized profit percentage for active customer holdings."""
+        total_inv = self.get_total_invested_capital(customer_id)
+        if total_inv <= 0:
+            return 0.0
+        holdings = self.get_portfolio_for_customer(customer_id)
+        total_pl = sum(h["Profit_Loss"] for h in holdings)
+        return round((total_pl / total_inv) * 100, 2)
+
 
 
     def find_transactions_by_ticker(self, ticker: str) -> List[Dict[str, Any]]:
