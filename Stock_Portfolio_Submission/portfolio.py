@@ -698,6 +698,14 @@ class StockPortfolioManager:
         holdings = self.get_portfolio_for_customer(customer_id)
         total_pl = sum(h["Profit_Loss"] for h in holdings)
         return round((total_pl / total_inv) * 100, 2)
+    def get_sector_company_counts(self) -> Dict[str, int]:
+        """Aggregate and return the count of S&P 500 companies in each market sector."""
+        counts: Dict[str, int] = {}
+        for data in self.company_dataset.values():
+            sector = data.get("sector", "General")
+            counts[sector] = counts.get(sector, 0) + 1
+        return dict(sorted(counts.items(), key=lambda item: item[1], reverse=True))
+
 
 
 
