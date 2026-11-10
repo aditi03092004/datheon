@@ -310,6 +310,55 @@ def calculate_word_complexity(word: str) -> float:
     return round(max(1.0, min(10.0, raw_total)), 1)
 
 
+def find_pattern_matches(
+    pattern: str,
+    word_pool: list[str],
+    excluded_letters: Optional[set[str]] = None
+) -> list[str]:
+    """
+    Find candidate words from the dictionary that match a masked Hangman pattern.
+
+    Args:
+        pattern (str): Masked word pattern, where '_' or '.' represents unknown characters.
+                       Spaces between characters are automatically stripped.
+        word_pool (list[str]): List of candidate dictionary words.
+        excluded_letters (Optional[set[str]]): Letters that are known not to be in the word.
+
+    Returns:
+        list[str]: Sorted list of candidate words matching the pattern.
+    """
+    cleaned_pat = pattern.replace(" ", "").lower()
+    if not cleaned_pat:
+        return []
+
+    excluded = {c.lower() for c in (excluded_letters or set())}
+    revealed_letters = {c for c in cleaned_pat if c.isalpha()}
+    target_len = len(cleaned_pat)
+
+    matches: list[str] = []
+    for raw_word in word_pool:
+        word = raw_word.strip().lower()
+        if len(word) != target_len:
+            continue
+        if any(bad_char in word for bad_char in excluded):
+            continue
+
+        matched = True
+        for p_char, w_char in zip(cleaned_pat, word):
+            if p_char in ("_", "."):
+                if w_char in revealed_letters:
+                    matched = False
+                    break
+            elif p_char != w_char:
+                matched = False
+                break
+
+        if matched:
+            matches.append(word)
+
+    return sorted(matches)
+
+
 class HangmanGame:
     """
     Encapsulates core Hangman game logic, rules, and state management.
@@ -541,6 +590,12 @@ class HangmanGame:
             self.hints_used += 1
 
         return selected
+
+    def find_matching_candidates(self, word_pool: list[str]) -> list[str]:
+        """Find candidate words matching the game's current masked pattern and guessed letters."""
+        pattern = self.get_masked_word().replace(" ", "")
+        incorrect = {c for c in self.guessed_letters if c not in self.secret_word}
+        return find_pattern_matches(pattern, word_pool, excluded_letters=incorrect)
 
 
 class TerminalStyle:
