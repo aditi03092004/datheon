@@ -706,6 +706,51 @@ class StockPortfolioManager:
             counts[sector] = counts.get(sector, 0) + 1
         return dict(sorted(counts.items(), key=lambda item: item[1], reverse=True))
 
+    def get_position_risk_alerts(
+        self,
+        customer_id: str,
+        stop_loss_pct: float = -10.0,
+        take_profit_pct: float = 20.0
+    ) -> Dict[str, List[Dict[str, Any]]]:
+        """
+        Scan customer positions against stop-loss and take-profit thresholds.
+
+        Args:
+            customer_id (str): Customer identifier.
+            stop_loss_pct (float): Negative percentage threshold triggering stop-loss alert (default: -10.0%).
+            take_profit_pct (float): Positive percentage threshold triggering profit-taking alert (default: 20.0%).
+
+        Returns:
+            Dict[str, List[Dict[str, Any]]]: Dictionary containing 'stop_loss_alerts' and 'take_profit_alerts'.
+        """
+        consolidated = self.get_consolidated_holdings(customer_id)
+        stop_loss_alerts: List[Dict[str, Any]] = []
+        take_profit_alerts: List[Dict[str, Any]] = []
+
+        for ticker, pos in consolidated.items():
+            ret = pos["return_percentage"]
+            if ret <= stop_loss_pct:
+                stop_loss_alerts.append({
+                    "ticker": ticker,
+                    "company_name": pos["company_name"],
+                    "return_percentage": ret,
+                    "profit_loss": pos["profit_loss"],
+                    "action_recommended": "Review for stop-loss exit or hedging"
+                })
+            elif ret >= take_profit_pct:
+                take_profit_alerts.append({
+                    "ticker": ticker,
+                    "company_name": pos["company_name"],
+                    "return_percentage": ret,
+                    "profit_loss": pos["profit_loss"],
+                    "action_recommended": "Consider taking partial profits"
+                })
+
+        return {
+            "stop_loss_alerts": stop_loss_alerts,
+            "take_profit_alerts": take_profit_alerts
+        }
+
 
 
 
