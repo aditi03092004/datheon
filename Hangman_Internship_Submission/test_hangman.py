@@ -19,6 +19,7 @@ from hangman import (
     HANGMAN_STAGES,
     calculate_word_complexity,
     filter_words_by_difficulty,
+    find_pattern_matches,
     load_words,
 )
 
@@ -521,6 +522,57 @@ class TestWordLinguisticMetrics(unittest.TestCase):
         for count in freqs_unique.values():
             self.assertEqual(count, 1)
 
+
+
+class TestPatternMatcher(unittest.TestCase):
+    """Tests pattern matching solver utility for candidate dictionary search."""
+
+    def setUp(self):
+        self.sample_words = [
+            "python", "patter", "person", "pardon",
+            "action", "banana", "beacon", "crypto"
+        ]
+
+    def test_empty_pattern_returns_empty(self):
+        """Verify empty pattern yields empty list."""
+        self.assertEqual(find_pattern_matches("", self.sample_words), [])
+
+    def test_pattern_matching_with_unknowns(self):
+        """Verify pattern matching with underscores and dots."""
+        matches = find_pattern_matches("p _ _ _ _ n", self.sample_words)
+        self.assertIn("python", matches)
+        self.assertIn("person", matches)
+        self.assertIn("pardon", matches)
+        self.assertNotIn("patter", matches)  # Ends in 'r', not 'n'
+
+        matches_dot = find_pattern_matches("p.t...", self.sample_words)
+        self.assertIn("python", matches_dot)
+        self.assertNotIn("patter", matches_dot)  # 'patter' has second 't' which would be revealed
+
+        matches_double_t = find_pattern_matches("p.tt..", self.sample_words)
+        self.assertIn("patter", matches_double_t)
+
+    def test_pattern_matching_with_excluded_letters(self):
+        """Verify candidate words containing excluded letters are rejected."""
+        # 'person' has 'e', 'pardon' has 'a'
+        matches_no_e = find_pattern_matches(
+            "p _ _ _ _ n",
+            self.sample_words,
+            excluded_letters={"e"}
+        )
+        self.assertIn("python", matches_no_e)
+        self.assertIn("pardon", matches_no_e)
+        self.assertNotIn("person", matches_no_e)
+
+    def test_game_find_matching_candidates_integration(self):
+        """Verify HangmanGame integration method dynamically filters based on current state."""
+        game = HangmanGame(secret_word="python")
+        game.process_guess("p")
+        game.process_guess("z")  # Wrong guess -> added to excluded
+
+        candidates = game.find_matching_candidates(self.sample_words)
+        self.assertIn("python", candidates)
+        self.assertNotIn("banana", candidates)
 
 if __name__ == "__main__":
     unittest.main()
