@@ -1048,6 +1048,54 @@ class StockPortfolioManager:
                 })
         return transactions
 
+    def get_transactions_in_date_range(
+        self,
+        start_date: str,
+        end_date: str,
+        customer_id: Optional[str] = None
+    ) -> List[Dict[str, Any]]:
+        """
+        Filter transactions by date range (inclusive), optionally scoped to a single customer.
+
+        Args:
+            start_date (str): Beginning date in 'YYYY-MM-DD' format.
+            end_date (str): Ending date in 'YYYY-MM-DD' format.
+            customer_id (Optional[str]): Optional customer identifier filter.
+
+        Returns:
+            List[Dict[str, Any]]: Matching historical transactions sorted chronologically.
+        """
+        try:
+            start_dt = datetime.strptime(start_date.strip(), "%Y-%m-%d")
+            end_dt = datetime.strptime(end_date.strip(), "%Y-%m-%d").replace(hour=23, minute=59, second=59)
+        except ValueError as err:
+            raise ValueError("Dates must be valid strings formatted as 'YYYY-MM-DD'.") from err
+
+        all_txs = self.get_all_transactions()
+        filtered: List[Dict[str, Any]] = []
+        cid = customer_id.strip() if customer_id else None
+
+        for tx in all_txs:
+            if cid and tx.get("Customer_id", "").strip() != cid:
+                continue
+
+            raw_ts = tx.get("Timestamp", "")
+            if not raw_ts or raw_ts == "N/A":
+                continue
+
+            try:
+                tx_dt = datetime.strptime(raw_ts[:19], "%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                try:
+                    tx_dt = datetime.fromisoformat(raw_ts)
+                except ValueError:
+                    continue
+
+            if start_dt <= tx_dt <= end_dt:
+                filtered.append(tx)
+
+        return sorted(filtered, key=lambda x: x.get("Timestamp", ""))
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
