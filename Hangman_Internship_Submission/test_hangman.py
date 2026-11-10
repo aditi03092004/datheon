@@ -19,6 +19,7 @@ from hangman import (
     HANGMAN_STAGES,
     calculate_word_complexity,
     filter_words_by_difficulty,
+    find_anagram_candidates,
     find_pattern_matches,
     load_words,
 )
@@ -573,6 +574,45 @@ class TestPatternMatcher(unittest.TestCase):
         candidates = game.find_matching_candidates(self.sample_words)
         self.assertIn("python", candidates)
         self.assertNotIn("banana", candidates)
+
+
+class TestAnagramAndScramble(unittest.TestCase):
+    """Tests anagram discovery and word scramble generation utilities."""
+
+    def test_find_anagram_candidates(self):
+        """Verify anagram search identifies valid permutations excluding target word."""
+        pool = ["listen", "enlist", "inlets", "banana", "silent", "tinsel"]
+        anagrams = find_anagram_candidates("silent", pool)
+        self.assertIn("listen", anagrams)
+        self.assertIn("enlist", anagrams)
+        self.assertIn("inlets", anagrams)
+        self.assertIn("tinsel", anagrams)
+        self.assertNotIn("silent", anagrams)
+        self.assertNotIn("banana", anagrams)
+
+    def test_find_anagram_invalid_inputs(self):
+        """Verify non-alphabetic or empty inputs yield empty results."""
+        self.assertEqual(find_anagram_candidates("", ["word"]), [])
+        self.assertEqual(find_anagram_candidates("word123", ["word"]), [])
+
+    def test_get_scrambled_word(self):
+        """Verify scrambled word is a permutation of original characters."""
+        game = HangmanGame(secret_word="python")
+        scrambled = game.get_scrambled_word(seed=42)
+        self.assertEqual(sorted(scrambled), sorted("python"))
+        self.assertEqual(len(scrambled), len("python"))
+        self.assertNotEqual(scrambled, "python")
+
+        # Edge cases: 1 letter or homogeneous
+        game_single = HangmanGame(secret_word="a")
+        self.assertEqual(game_single.get_scrambled_word(), "a")
+
+    def test_game_find_anagrams_integration(self):
+        """Verify HangmanGame integration method calls anagram search."""
+        game = HangmanGame(secret_word="east")
+        pool = ["seat", "teas", "eats", "east", "west"]
+        anagrams = game.find_anagrams(pool)
+        self.assertEqual(sorted(anagrams), ["eats", "seat", "teas"])
 
 if __name__ == "__main__":
     unittest.main()
