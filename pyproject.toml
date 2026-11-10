@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "datheon-internship-suite"
-version = "2.3.0"
+version = "2.4.0"
 authors = [
     { name = "Aditi Hundre", email = "aditihundre0309@gmail.com" }
 ]

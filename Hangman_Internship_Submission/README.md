@@ -20,7 +20,7 @@ The application allows a user to guess a hidden English word one letter at a tim
 Hangman_Internship_Submission/
 │
 ├── hangman.py             # Main application: game engine, rendering, and interactive CLI
-├── test_hangman.py        # Automated test suite (Python unittest standard library - 41 tests)
+├── test_hangman.py        # Automated test suite (Python unittest standard library - 46 tests)
 ├── english_words.txt      # Curated dictionary of 2,400+ clean, diverse English words
 └── README.md              # Project documentation, execution, and evaluation guide
 ```
@@ -78,7 +78,7 @@ Hangman_Internship_Submission/
 
 ## 5. How to Run the Automated Test Suite
 
-The project includes 41 automated unit tests covering word loading, complexity scoring, hint budgeting, validation, state management, duplicates, scoring, and termination.
+The project includes 46 automated unit tests covering word loading, complexity scoring, hint budgeting, validation, state management, duplicates, scoring, and termination.
 
 To run the automated tests:
 

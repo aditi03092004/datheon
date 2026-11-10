@@ -79,7 +79,7 @@ $$\text{Herfindahl-Hirschman Index (HHI)} = \sum (\text{Sector Percentage Weight
 
 ## 5. How to Run the Automated Test Suite
 
-The project includes 25 comprehensive unit and integration tests covering dataset ingestion, ID uniqueness, calculation arithmetic, multi-customer portfolio isolation, sales, consolidated holdings, and risk profiling.
+The project includes 28 comprehensive unit and integration tests covering dataset ingestion, ID uniqueness, calculation arithmetic, multi-customer portfolio isolation, sales, consolidated holdings, and risk profiling.
 
 To run the automated tests:
 

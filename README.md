@@ -1,7 +1,7 @@
 # Datheon Python Programming Internship
 
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)
-![Tests Status](https://img.shields.io/badge/tests-72%20passing-brightgreen.svg)
+![Tests Status](https://img.shields.io/badge/tests-81%20passing-brightgreen.svg)
 ![Internship](https://img.shields.io/badge/Internship-Datheon-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)
 
@@ -17,7 +17,7 @@ As a B.Tech Computer Science and Engineering student specialising in Cybersecuri
 
 ### Quick Start (Unified Launcher)
 
-You can launch either project or run the complete automated test suite (72 passing tests) directly from the repository root using the unified launcher:
+You can launch either project or run the complete automated test suite (81 passing tests) directly from the repository root using the unified launcher:
 
 ```bash
 python run_project.py
@@ -29,6 +29,7 @@ CLI options:
 - `python run_project.py --summary`   : Consolidated features and metrics snapshot
 - `python run_project.py --benchmark` : Run test suites with runtime performance benchmark
 - `python run_project.py --lookup TICKER` : Instant S&P 500 company & pricing lookup
+- `python run_project.py --check`         : Rapid combined health check and cache clean
 - `python run_project.py --clean`     : Safely remove bytecode caches (`__pycache__`)
 - `python run_project.py --test`      : Run all automated unit test suites
 
@@ -133,8 +134,8 @@ python run_project.py --doctor
 | **Architecture** | Object-Oriented State Engine | Modular Financial & Market Service | CLI Orchestrator & Diagnostics |
 | **Data Source** | 2,492 Curated English Words | 503 S&P 500 Companies Dataset | Subprocess Runners |
 | **Test Framework** | Python Standard `unittest` | Python Standard `unittest` | Python Standard `unittest` |
-| **Passing Tests** | **41 Passing Unit Tests** | **25 Passing Unit Tests** | **6 Passing Unit Tests** |
-| **Total Test Count** | \multicolumn{3}{c|}{**72 Passing Unit Tests Across All Suites**} |
+| **Passing Tests** | **46 Passing Unit Tests** | **28 Passing Unit Tests** | **7 Passing Unit Tests** |
+| **Total Test Count** | \multicolumn{3}{c|}{**81 Passing Unit Tests Across All Suites**} |
 | **Key Features** | 7 Gallows Stages, Hints Budget, Complexity Score | Consolidated Cost Basis, Sales, HHI Risk Profiling | `--doctor`, `--stats`, `--clean`, Menu |
 | **Offline Ready** | 100% Standard Library | 100% Standard Library Fallback | 100% Standard Library |
 
