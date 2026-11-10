@@ -51,6 +51,21 @@ def run_project_doctor() -> bool:
     return all_ok
 
 
+def run_quick_check() -> bool:
+    """Run an all-in-one rapid diagnostic check and workspace verification."""
+    print("=" * 60)
+    print("      DATHEON INTERNSHIP RAPID SYSTEM CHECK (--check)     ")
+    print("=" * 60)
+    doctor_ok = run_project_doctor()
+    cleaned = clean_project_cache()
+    print(f" [+] Workspace Health: {'HEALTHY' if doctor_ok else 'FAILED'}")
+    print(f" [+] Cache Cleaned:    {cleaned} folder(s)")
+    print("=" * 60)
+    print(f" Overall Status: {'ALL SYSTEMS OPERATIONAL' if doctor_ok else 'ACTION REQUIRED'}")
+    print("=" * 60)
+    return doctor_ok
+
+
 def clean_project_cache() -> int:
     """Safely remove __pycache__ directories and compiled bytecode files across the repository."""
     cleaned_count = 0
@@ -148,6 +163,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--summary", action="store_true", help="Display consolidated internship snapshot")
     parser.add_argument("--benchmark", action="store_true", help="Run automated test suite with performance benchmark timing")
     parser.add_argument("--clean", action="store_true", help="Clean Python bytecode caches and temporary artifacts")
+    parser.add_argument("--check", action="store_true", help="Run rapid combined health check and cache clean verification")
     parser.add_argument("--lookup", type=str, metavar="TICKER", help="Query S&P 500 company info and current market pricing for a ticker")
     parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.0")
     return parser.parse_args()
@@ -218,6 +234,9 @@ def main() -> None:
         return
     if args.clean:
         clean_project_cache()
+        return
+    if args.check:
+        run_quick_check()
         return
     if args.lookup:
         lookup_ticker_info(args.lookup)
