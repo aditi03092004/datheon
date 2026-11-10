@@ -797,6 +797,63 @@ class StockPortfolioManager:
             "risk_profile": risk_profile
         }
 
+    def get_rebalancing_orders(
+        self,
+        customer_id: str,
+        target_sector_weights: Dict[str, float]
+    ) -> List[Dict[str, Any]]:
+        """
+        Generate rebalancing orders to align portfolio with target sector weights.
+
+        Args:
+            customer_id (str): Customer identifier.
+            target_sector_weights (Dict[str, float]): Target sector percentage map summing to ~100.0.
+
+        Returns:
+            List[Dict[str, Any]]: List of rebalancing action recommendations per sector.
+        """
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return []
+
+        total_val = sum(pos["current_value"] for pos in consolidated.values())
+        if total_val <= 0:
+            return []
+
+        current_sector_values: Dict[str, float] = {}
+        for pos in consolidated.values():
+            sec = pos["sector"]
+            current_sector_values[sec] = round(current_sector_values.get(sec, 0.0) + pos["current_value"], 2)
+
+        all_sectors = sorted(set(list(target_sector_weights.keys()) + list(current_sector_values.keys())))
+        orders: List[Dict[str, Any]] = []
+
+        for sec in all_sectors:
+            target_pct = target_sector_weights.get(sec, 0.0)
+            target_val = round((target_pct / 100.0) * total_val, 2)
+            curr_val = current_sector_values.get(sec, 0.0)
+            curr_pct = round((curr_val / total_val) * 100.0, 2)
+            diff = round(target_val - curr_val, 2)
+
+            if diff > 1.0:
+                action = "BUY"
+            elif diff < -1.0:
+                action = "SELL"
+            else:
+                action = "HOLD"
+
+            orders.append({
+                "sector": sec,
+                "current_value": curr_val,
+                "current_weight": curr_pct,
+                "target_weight": target_pct,
+                "target_value": target_val,
+                "adjustment_needed": diff,
+                "action": action
+            })
+
+        return orders
+
     def find_transactions_by_ticker(self, ticker: str) -> List[Dict[str, Any]]:
         """Filter and return all historical transactions matching a specific ticker."""
         sym = ticker.strip().upper()
