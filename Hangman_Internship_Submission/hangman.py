@@ -5,6 +5,7 @@ Datheon Python Programming Internship - Task 1
 An independent, object-oriented implementation of the classic Hangman word-guessing game.
 """
 
+import json
 import os
 import random
 import sys
@@ -112,6 +113,30 @@ class WinStreakTracker:
             "total_duration": self.total_duration,
             "rounds": list(self.history)
         }
+
+    def export_session_history_json(self, destination: Path) -> dict:
+        """Export session history and aggregate telemetry to a JSON file."""
+        dest = Path(destination)
+        summary = self.get_session_summary()
+        with open(dest, "w", encoding="utf-8") as f:
+            json.dump(summary, f, indent=2)
+        return summary
+
+    def load_session_history_json(self, source: Path) -> int:
+        """Load session history and aggregate telemetry from an existing JSON file."""
+        src = Path(source)
+        if not src.exists():
+            raise FileNotFoundError(f"Telemetry file not found at: {src}")
+
+        with open(src, "r", encoding="utf-8") as f:
+            data = json.load(f)
+
+        self.total_games = int(data.get("total_games", 0))
+        self.total_wins = int(data.get("total_wins", 0))
+        self.highest_streak = int(data.get("highest_streak", 0))
+        self.current_streak = int(data.get("current_streak", 0))
+        self.history = list(data.get("rounds", []))
+        return len(self.history)
 
 
 class GameState(Enum):
