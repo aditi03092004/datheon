@@ -359,6 +359,32 @@ def find_pattern_matches(
     return sorted(matches)
 
 
+def find_anagram_candidates(word: str, word_pool: list[str]) -> list[str]:
+    """
+    Find candidate words from the dictionary that are valid anagrams of the target word.
+
+    Args:
+        word (str): Source word.
+        word_pool (list[str]): List of candidate dictionary words.
+
+    Returns:
+        list[str]: Sorted list of unique anagrams excluding the exact target word itself.
+    """
+    cleaned = word.strip().lower()
+    if not cleaned or not cleaned.isalpha():
+        return []
+
+    target_sorted = sorted(cleaned)
+    matches = set()
+    for candidate in word_pool:
+        cand_clean = candidate.strip().lower()
+        if cand_clean != cleaned and len(cand_clean) == len(cleaned):
+            if sorted(cand_clean) == target_sorted:
+                matches.add(cand_clean)
+
+    return sorted(list(matches))
+
+
 class HangmanGame:
     """
     Encapsulates core Hangman game logic, rules, and state management.
@@ -596,6 +622,28 @@ class HangmanGame:
         pattern = self.get_masked_word().replace(" ", "")
         incorrect = {c for c in self.guessed_letters if c not in self.secret_word}
         return find_pattern_matches(pattern, word_pool, excluded_letters=incorrect)
+
+    def get_scrambled_word(self, seed: Optional[int] = None) -> str:
+        """
+        Return a deterministic or randomized permutation of the secret word letters.
+        Guarantees that for words with length > 2 and > 1 unique letters, the result differs from the secret word.
+        """
+        chars = list(self.secret_word)
+        if len(chars) <= 1 or len(set(chars)) <= 1:
+            return self.secret_word
+
+        rng = random.Random(seed) if seed is not None else random.Random()
+        scrambled = chars[:]
+        for _ in range(10):
+            rng.shuffle(scrambled)
+            res = "".join(scrambled)
+            if res != self.secret_word:
+                return res
+        return "".join(scrambled)
+
+    def find_anagrams(self, word_pool: list[str]) -> list[str]:
+        """Find dictionary anagrams of the current secret word."""
+        return find_anagram_candidates(self.secret_word, word_pool)
 
 
 class TerminalStyle:
