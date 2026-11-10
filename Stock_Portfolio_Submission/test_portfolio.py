@@ -500,6 +500,31 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertEqual(order_map["Health Care"]["action"], "BUY")
         self.assertGreater(order_map["Health Care"]["adjustment_needed"], 0.0)
 
+    def test_estimated_dividend_income(self):
+        """Verify estimated dividend cash flows and effective portfolio yield calculation."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty customer
+        empty_div = self.manager.get_estimated_dividend_income(cid)
+        self.assertEqual(empty_div["annual_dividend_income"], 0.0)
+        self.assertEqual(empty_div["effective_portfolio_yield"], 0.0)
+        self.assertEqual(empty_div["positions"], [])
+
+        # 2. Populated customer: 2 shares of AAPL
+        self.manager.record_transaction(cid, "AAPL", 150.0, 2)
+        div_proj = self.manager.get_estimated_dividend_income(cid)
+        self.assertGreater(div_proj["annual_dividend_income"], 0.0)
+        self.assertEqual(
+            div_proj["quarterly_dividend_income"],
+            round(div_proj["annual_dividend_income"] / 4.0, 2)
+        )
+        self.assertEqual(
+            div_proj["monthly_dividend_income"],
+            round(div_proj["annual_dividend_income"] / 12.0, 2)
+        )
+        self.assertGreater(div_proj["effective_portfolio_yield"], 0.0)
+        self.assertEqual(len(div_proj["positions"]), 1)
+        self.assertEqual(div_proj["positions"][0]["ticker"], "AAPL")
+
 
 
 if __name__ == "__main__":
