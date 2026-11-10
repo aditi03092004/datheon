@@ -854,6 +854,81 @@ class StockPortfolioManager:
 
         return orders
 
+    SECTOR_DIVIDEND_BENCHMARKS: Dict[str, float] = {
+        "Utilities": 3.5,
+        "Real Estate": 3.8,
+        "Financials": 2.8,
+        "Energy": 3.2,
+        "Consumer Staples": 2.6,
+        "Health Care": 1.8,
+        "Industrials": 1.6,
+        "Information Technology": 0.9,
+        "Consumer Discretionary": 1.0,
+        "Communication Services": 1.1,
+        "Materials": 2.1,
+    }
+
+    def get_estimated_dividend_income(
+        self,
+        customer_id: str,
+        default_dividend_yield_pct: float = 2.0
+    ) -> Dict[str, Any]:
+        """
+        Calculate estimated annual, quarterly, and monthly dividend cash flows for customer holdings.
+
+        Args:
+            customer_id (str): Customer identifier.
+            default_dividend_yield_pct (float): Fallback dividend yield percentage for unbenchmarked sectors.
+
+        Returns:
+            Dict[str, Any]: Summary of projected dividend cash flows and per-position breakdown.
+        """
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "annual_dividend_income": 0.0,
+                "quarterly_dividend_income": 0.0,
+                "monthly_dividend_income": 0.0,
+                "effective_portfolio_yield": 0.0,
+                "positions": []
+            }
+
+        total_val = sum(pos["current_value"] for pos in consolidated.values())
+        total_annual = 0.0
+        projections: List[Dict[str, Any]] = []
+
+        for ticker, pos in consolidated.items():
+            sec = pos.get("sector", "General")
+            yield_pct = self.SECTOR_DIVIDEND_BENCHMARKS.get(sec, default_dividend_yield_pct)
+            ann_income = round(pos["current_value"] * (yield_pct / 100.0), 2)
+            total_annual += ann_income
+
+            projections.append({
+                "ticker": ticker,
+                "company_name": pos["company_name"],
+                "sector": sec,
+                "current_value": pos["current_value"],
+                "dividend_yield_pct": yield_pct,
+                "annual_income": ann_income,
+                "quarterly_income": round(ann_income / 4.0, 2),
+                "monthly_income": round(ann_income / 12.0, 2)
+            })
+
+        total_annual = round(total_annual, 2)
+        effective_yield = round((total_annual / total_val * 100.0), 2) if total_val > 0 else 0.0
+
+        return {
+            "customer_id": customer_id,
+            "total_portfolio_value": total_val,
+            "annual_dividend_income": total_annual,
+            "quarterly_dividend_income": round(total_annual / 4.0, 2),
+            "monthly_dividend_income": round(total_annual / 12.0, 2),
+            "effective_portfolio_yield": effective_yield,
+            "positions": projections
+        }
+
     def find_transactions_by_ticker(self, ticker: str) -> List[Dict[str, Any]]:
         """Filter and return all historical transactions matching a specific ticker."""
         sym = ticker.strip().upper()
