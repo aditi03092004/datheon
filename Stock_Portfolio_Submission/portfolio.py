@@ -751,8 +751,51 @@ class StockPortfolioManager:
             "take_profit_alerts": take_profit_alerts
         }
 
+    def get_customer_financial_scorecard(self, customer_id: str) -> Dict[str, Any]:
+        """
+        Generate a comprehensive executive financial scorecard for a customer.
 
+        Args:
+            customer_id (str): Customer identifier.
 
+        Returns:
+            Dict[str, Any]: Complete financial scorecard metrics.
+        """
+        cid = customer_id.strip()
+        is_registered = self.validate_customer_id(cid)
+        raw_holdings = self.get_portfolio_for_customer(cid)
+        consolidated = self.get_consolidated_holdings(cid)
+
+        total_inv = self.get_total_invested_capital(cid)
+        total_curr_val = round(sum(pos["current_value"] for pos in consolidated.values()), 2)
+        unrealized_pl = round(total_curr_val - total_inv, 2)
+        unrealized_ret_pct = self.get_unrealized_profit_percentage(cid)
+
+        profitable = [p for p in consolidated.values() if p["profit_loss"] > 0]
+        losing = [p for p in consolidated.values() if p["profit_loss"] < 0]
+        win_ratio = round((len(profitable) / len(consolidated) * 100), 1) if consolidated else 0.0
+
+        top_holding = "None"
+        if consolidated:
+            top_holding = max(consolidated.values(), key=lambda p: p["current_value"])["ticker"]
+
+        risk_profile = self.get_portfolio_risk_profile(cid)
+
+        return {
+            "customer_id": cid,
+            "is_registered": is_registered,
+            "total_transactions": len(raw_holdings),
+            "active_positions_count": len(consolidated),
+            "total_invested_capital": total_inv,
+            "total_current_valuation": total_curr_val,
+            "unrealized_profit_loss": unrealized_pl,
+            "unrealized_return_percentage": unrealized_ret_pct,
+            "profitable_positions_count": len(profitable),
+            "losing_positions_count": len(losing),
+            "position_win_ratio": win_ratio,
+            "top_holding": top_holding,
+            "risk_profile": risk_profile
+        }
 
     def find_transactions_by_ticker(self, ticker: str) -> List[Dict[str, Any]]:
         """Filter and return all historical transactions matching a specific ticker."""
