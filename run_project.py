@@ -95,6 +95,32 @@ def print_consolidated_summary() -> None:
     print(" [Diagnostics] Verified healthy with full test coverage")
     print("=" * 60)
 
+def lookup_ticker_info(ticker: str) -> bool:
+    """Query company dataset and market price service for a given ticker."""
+    sys.path.insert(0, str(TASK_2_DIR))
+    from portfolio import StockPortfolioManager, MarketDataService
+
+    manager = StockPortfolioManager(base_directory=TASK_2_DIR)
+    info = manager.validate_ticker(ticker)
+    print("=" * 60)
+    print(f"         MARKET LOOKUP: {ticker.upper()}         ")
+    print("=" * 60)
+    if not info:
+        print(f" [!] Ticker '{ticker.upper()}' was not found in the S&P 500 dataset.")
+        print("=" * 60)
+        return False
+
+    market = MarketDataService()
+    price, source = market.get_current_price(ticker)
+    print(f" Ticker:       {ticker.upper()}")
+    print(f" Company Name: {info.get('name')}")
+    print(f" GICS Sector:  {info.get('sector')}")
+    print(f" Market Price: ${price:.2f}")
+    print(f" Data Source:  {source}")
+    print("=" * 60)
+    return True
+
+
 def print_project_statistics() -> None:
     """Display high-level metrics across Task 1 and Task 2."""
     words_file = TASK_1_DIR / "english_words.txt"
@@ -122,6 +148,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--summary", action="store_true", help="Display consolidated internship snapshot")
     parser.add_argument("--benchmark", action="store_true", help="Run automated test suite with performance benchmark timing")
     parser.add_argument("--clean", action="store_true", help="Clean Python bytecode caches and temporary artifacts")
+    parser.add_argument("--lookup", type=str, metavar="TICKER", help="Query S&P 500 company info and current market pricing for a ticker")
     parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.0")
     return parser.parse_args()
 
@@ -191,6 +218,9 @@ def main() -> None:
         return
     if args.clean:
         clean_project_cache()
+        return
+    if args.lookup:
+        lookup_ticker_info(args.lookup)
         return
 
     while True:
