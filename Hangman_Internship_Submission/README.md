@@ -20,7 +20,7 @@ The application allows a user to guess a hidden English word one letter at a tim
 Hangman_Internship_Submission/
 │
 ├── hangman.py             # Main application: game engine, rendering, and interactive CLI
-├── test_hangman.py        # Automated test suite (Python unittest standard library - 32 tests)
+├── test_hangman.py        # Automated test suite (Python unittest standard library - 41 tests)
 ├── english_words.txt      # Curated dictionary of 2,400+ clean, diverse English words
 └── README.md              # Project documentation, execution, and evaluation guide
 ```
@@ -37,6 +37,9 @@ Hangman_Internship_Submission/
 
 ## 3. Core Features & Compliance
 - **Word Complexity Scorer:** `calculate_word_complexity` grades secret words on a 1.0 to 10.0 scale.
+- **Word Pattern Candidate Matcher:** `find_pattern_matches` inspects current masked words with wildcards and excludes bad letters to identify valid dictionary candidates.
+- **Smart Hint Strategy:** `get_smart_hint` suggests letters using English frequency or word frequency ranking.
+- **Telemetry JSON Persistence:** `export_session_history_json` and `load_session_history_json` save and restore player round records.
 - **Hint Budgeting:** Configurable `max_hints` allowance per round with non-consuming peek capabilities.
 - **Session Telemetry:** Tracks per-round duration, guess accuracy ratio, win streak progression, and lifetime win percentage.
 - **Round Timer:** Dynamic `GameTimer` recording turn pacing and round duration in seconds.
@@ -75,7 +78,7 @@ Hangman_Internship_Submission/
 
 ## 5. How to Run the Automated Test Suite
 
-The project includes 32 automated unit tests covering word loading, complexity scoring, hint budgeting, validation, state management, duplicates, scoring, and termination.
+The project includes 41 automated unit tests covering word loading, complexity scoring, hint budgeting, validation, state management, duplicates, scoring, and termination.
 
 To run the automated tests:
 
