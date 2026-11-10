@@ -424,6 +424,28 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertEqual(total_companies_in_sectors, len(self.manager.company_dataset))
         self.assertIn("Information Technology", counts)
 
+    def test_position_risk_alerts(self):
+        """Verify detection of stop-loss and take-profit threshold breaches."""
+        cid = self.manager.generate_customer_id()
+        # Empty customer yields empty alert lists
+        empty_alerts = self.manager.get_position_risk_alerts(cid)
+        self.assertEqual(empty_alerts["stop_loss_alerts"], [])
+        self.assertEqual(empty_alerts["take_profit_alerts"], [])
+
+        # Record a holding
+        self.manager.record_transaction(cid, "AAPL", 150.0, 2)
+        # Using tight thresholds to trigger alerts deterministically
+        alerts = self.manager.get_position_risk_alerts(
+            cid,
+            stop_loss_pct=500.0,      # Everything triggers stop-loss alert
+            take_profit_pct=-500.0    # Everything triggers take-profit alert
+        )
+        self.assertIsInstance(alerts["stop_loss_alerts"], list)
+        self.assertIsInstance(alerts["take_profit_alerts"], list)
+        self.assertEqual(len(alerts["stop_loss_alerts"]), 1)
+        self.assertEqual(alerts["stop_loss_alerts"][0]["ticker"], "AAPL")
+        self.assertIn("action_recommended", alerts["stop_loss_alerts"][0])
+
 
 
 if __name__ == "__main__":
