@@ -471,6 +471,35 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertIn("risk_profile", scorecard)
         self.assertEqual(scorecard["risk_profile"]["customer_id"], cid)
 
+    def test_rebalancing_orders_generation(self):
+        """Verify target asset allocation rebalancing orders calculate buy/sell adjustments."""
+        cid = self.manager.generate_customer_id()
+        # Empty customer yields empty orders
+        empty_orders = self.manager.get_rebalancing_orders(cid, {"Information Technology": 100.0})
+        self.assertEqual(empty_orders, [])
+
+        # Record a holding in Tech ($300 total)
+        self.manager.record_transaction(cid, "AAPL", 150.0, 2)
+        # Target: 50% Tech, 50% Health Care
+        targets = {
+            "Information Technology": 50.0,
+            "Health Care": 50.0
+        }
+        orders = self.manager.get_rebalancing_orders(cid, targets)
+        self.assertEqual(len(orders), 2)
+
+        order_map = {o["sector"]: o for o in orders}
+        self.assertIn("Information Technology", order_map)
+        self.assertIn("Health Care", order_map)
+
+        # Tech is currently 100%, target is 50%, so action is SELL
+        self.assertEqual(order_map["Information Technology"]["action"], "SELL")
+        self.assertLess(order_map["Information Technology"]["adjustment_needed"], 0.0)
+
+        # Health Care is currently 0%, target is 50%, so action is BUY
+        self.assertEqual(order_map["Health Care"]["action"], "BUY")
+        self.assertGreater(order_map["Health Care"]["adjustment_needed"], 0.0)
+
 
 
 if __name__ == "__main__":
