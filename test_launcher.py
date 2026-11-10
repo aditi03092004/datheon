@@ -47,6 +47,11 @@ class TestLauncherConfiguration(unittest.TestCase):
         self.assertTrue(lookup_ticker_info("AAPL"))
         self.assertFalse(lookup_ticker_info("NONEXISTENT_XYZ"))
 
+    def test_run_quick_check(self):
+        """Verify run_quick_check executes diagnostic check and returns True."""
+        from run_project import run_quick_check
+        self.assertTrue(run_quick_check())
+
 
 
 
