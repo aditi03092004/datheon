@@ -79,7 +79,7 @@ $$\text{Herfindahl-Hirschman Index (HHI)} = \sum (\text{Sector Percentage Weight
 
 ## 5. How to Run the Automated Test Suite
 
-The project includes 19 comprehensive unit and integration tests covering dataset ingestion, ID uniqueness, calculation arithmetic, multi-customer portfolio isolation, sales, consolidated holdings, and risk profiling.
+The project includes 25 comprehensive unit and integration tests covering dataset ingestion, ID uniqueness, calculation arithmetic, multi-customer portfolio isolation, sales, consolidated holdings, and risk profiling.
 
 To run the automated tests:
 
@@ -97,3 +97,8 @@ The `StockPortfolioManager` includes position ranking analytics for rapid portfo
 - **`get_total_invested_capital(customer_id)`**: Calculates the sum of all invested funds across active positions.
 - **`get_unrealized_profit_percentage(customer_id)`**: Computes aggregate unrealized return percentage for an entire customer portfolio.
 - **`get_sector_company_counts()`**: Tallies the total distribution of companies in the S&P 500 dataset across each economic sector.
+
+### Executive Financial Scorecard & Target Rebalancing
+- **`get_customer_financial_scorecard(customer_id)`**: Generates an all-in-one financial dashboard including active position counts, total invested capital, total valuation, unrealized P/L, position win ratio, top holding ticker, and risk classification.
+- **`get_position_risk_alerts(customer_id, stop_loss_pct, take_profit_pct)`**: Scans holdings against customizable risk bounds, flagging positions requiring stop-loss protection or profit realization.
+- **`get_rebalancing_orders(customer_id, target_sector_weights)`**: Computes dollar adjustments per sector required to align a portfolio with user-specified target asset allocation percentages.
