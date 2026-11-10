@@ -546,6 +546,31 @@ class TestStockPortfolioTracker(unittest.TestCase):
         var_99 = self.manager.calculate_portfolio_drawdown_risk(cid, confidence_level=0.99)
         self.assertGreater(var_99["estimated_daily_var"], var_90["estimated_daily_var"])
 
+    def test_transactions_in_date_range(self):
+        """Verify historical transactions are filterable across date intervals."""
+        from datetime import datetime, timedelta
+        cid = self.manager.generate_customer_id()
+        self.manager.record_transaction(cid, "AAPL", 150.0, 1)
+
+        today_str = datetime.now().strftime("%Y-%m-%d")
+        yesterday_str = (datetime.now() - timedelta(days=1)).strftime("%Y-%m-%d")
+        tomorrow_str = (datetime.now() + timedelta(days=1)).strftime("%Y-%m-%d")
+
+        # Range including today finds the transaction
+        matching = self.manager.get_transactions_in_date_range(yesterday_str, tomorrow_str, customer_id=cid)
+        self.assertEqual(len(matching), 1)
+        self.assertEqual(matching[0]["Ticker"], "AAPL")
+
+        # Past window finds nothing
+        past_start = (datetime.now() - timedelta(days=30)).strftime("%Y-%m-%d")
+        past_end = (datetime.now() - timedelta(days=10)).strftime("%Y-%m-%d")
+        empty_window = self.manager.get_transactions_in_date_range(past_start, past_end)
+        self.assertEqual(len(empty_window), 0)
+
+        # Invalid date format raises ValueError
+        with self.assertRaises(ValueError):
+            self.manager.get_transactions_in_date_range("invalid-date", today_str)
+
 
 
 if __name__ == "__main__":
