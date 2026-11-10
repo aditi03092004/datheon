@@ -18,6 +18,7 @@ from hangman import (
     HangmanGame,
     HANGMAN_STAGES,
     calculate_word_complexity,
+    estimate_syllable_count,
     filter_words_by_difficulty,
     find_anagram_candidates,
     find_pattern_matches,
@@ -522,6 +523,22 @@ class TestWordLinguisticMetrics(unittest.TestCase):
         self.assertEqual(len(freqs_unique), 5)
         for count in freqs_unique.values():
             self.assertEqual(count, 1)
+
+    def test_syllable_count_estimation(self):
+        """Verify syllable counting across short words, silent 'e', and phonetic groups."""
+        self.assertEqual(estimate_syllable_count("cat"), 1)
+        self.assertEqual(estimate_syllable_count("python"), 2)
+        self.assertEqual(estimate_syllable_count("banana"), 3)
+        self.assertEqual(estimate_syllable_count("code"), 1)  # Silent e
+        self.assertEqual(estimate_syllable_count("apple"), 2) # Trailing 'le'
+
+        # Edge cases
+        self.assertEqual(estimate_syllable_count(""), 0)
+        self.assertEqual(estimate_syllable_count("123"), 0)
+
+        # HangmanGame property integration
+        game = HangmanGame(secret_word="cyber")
+        self.assertEqual(game.syllable_count, 2)
 
 
 
