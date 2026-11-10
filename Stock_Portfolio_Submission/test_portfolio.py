@@ -525,6 +525,27 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertEqual(len(div_proj["positions"]), 1)
         self.assertEqual(div_proj["positions"][0]["ticker"], "AAPL")
 
+    def test_portfolio_drawdown_risk_var(self):
+        """Verify parametric Value-at-Risk scales with valuation and confidence level."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty customer
+        empty_var = self.manager.calculate_portfolio_drawdown_risk(cid)
+        self.assertEqual(empty_var["total_portfolio_value"], 0.0)
+        self.assertEqual(empty_var["estimated_daily_var"], 0.0)
+
+        # 2. Populated customer
+        self.manager.record_transaction(cid, "AAPL", 150.0, 4)
+        var_95 = self.manager.calculate_portfolio_drawdown_risk(cid, confidence_level=0.95)
+        self.assertGreater(var_95["total_portfolio_value"], 0.0)
+        self.assertGreater(var_95["estimated_daily_var"], 0.0)
+        self.assertGreater(var_95["estimated_monthly_var"], var_95["estimated_daily_var"])
+        self.assertIn("risk_assessment", var_95)
+
+        # 3. Higher confidence (99%) yields higher VaR than 90%
+        var_90 = self.manager.calculate_portfolio_drawdown_risk(cid, confidence_level=0.90)
+        var_99 = self.manager.calculate_portfolio_drawdown_risk(cid, confidence_level=0.99)
+        self.assertGreater(var_99["estimated_daily_var"], var_90["estimated_daily_var"])
+
 
 
 if __name__ == "__main__":
