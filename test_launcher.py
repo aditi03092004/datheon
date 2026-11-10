@@ -41,6 +41,12 @@ class TestLauncherConfiguration(unittest.TestCase):
         except Exception as e:
             self.fail(f"run_benchmark raised {e}")
 
+    def test_lookup_ticker_info(self):
+        """Verify lookup_ticker_info returns True for valid ticker and False for invalid."""
+        from run_project import lookup_ticker_info
+        self.assertTrue(lookup_ticker_info("AAPL"))
+        self.assertFalse(lookup_ticker_info("NONEXISTENT_XYZ"))
+
 
 
 
