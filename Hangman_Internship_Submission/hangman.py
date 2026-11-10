@@ -310,6 +310,42 @@ def calculate_word_complexity(word: str) -> float:
     return round(max(1.0, min(10.0, raw_total)), 1)
 
 
+def estimate_syllable_count(word: str) -> int:
+    """
+    Estimate the number of syllables in an English word using phonetic vowel-clustering heuristics.
+
+    Args:
+        word (str): Input English word.
+
+    Returns:
+        int: Estimated syllable count (minimum 1 for any valid word).
+    """
+    cleaned = word.strip().lower()
+    if not cleaned or not cleaned.isalpha():
+        return 0
+
+    if len(cleaned) <= 3:
+        return 1
+
+    vowels = "aeiouy"
+    count = 0
+    prev_is_vowel = False
+
+    for ch in cleaned:
+        is_vowel = ch in vowels
+        if is_vowel and not prev_is_vowel:
+            count += 1
+        prev_is_vowel = is_vowel
+
+    if cleaned.endswith("e") and not cleaned.endswith("le"):
+        count -= 1
+
+    if cleaned.endswith("ed") and len(cleaned) > 3 and cleaned[-3] not in ("d", "t"):
+        count -= 1
+
+    return max(1, count)
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -528,6 +564,11 @@ class HangmanGame:
         if not self.secret_word:
             return 0.0
         return round(self.vowel_count / len(self.secret_word), 2)
+
+    @property
+    def syllable_count(self) -> int:
+        """Estimated syllable count for the secret word."""
+        return estimate_syllable_count(self.secret_word)
     @property
     def letter_frequencies(self) -> dict[str, int]:
         """Mapping of unique letters in the secret word to their occurrence frequencies."""
