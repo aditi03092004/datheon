@@ -446,6 +446,31 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertEqual(alerts["stop_loss_alerts"][0]["ticker"], "AAPL")
         self.assertIn("action_recommended", alerts["stop_loss_alerts"][0])
 
+    def test_customer_financial_scorecard(self):
+        """Verify executive financial scorecard aggregates holdings, win ratio, and risk summary."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty customer scorecard
+        empty_scorecard = self.manager.get_customer_financial_scorecard(cid)
+        self.assertEqual(empty_scorecard["customer_id"], cid)
+        self.assertTrue(empty_scorecard["is_registered"])
+        self.assertEqual(empty_scorecard["total_transactions"], 0)
+        self.assertEqual(empty_scorecard["active_positions_count"], 0)
+        self.assertEqual(empty_scorecard["top_holding"], "None")
+        self.assertEqual(empty_scorecard["position_win_ratio"], 0.0)
+
+        # 2. Populated customer
+        self.manager.record_transaction(cid, "AAPL", 150.0, 2)
+        self.manager.record_transaction(cid, "MSFT", 250.0, 1)
+
+        scorecard = self.manager.get_customer_financial_scorecard(cid)
+        self.assertEqual(scorecard["total_transactions"], 2)
+        self.assertEqual(scorecard["active_positions_count"], 2)
+        self.assertEqual(scorecard["total_invested_capital"], 550.0)
+        self.assertGreater(scorecard["total_current_valuation"], 0.0)
+        self.assertIn(scorecard["top_holding"], ["AAPL", "MSFT"])
+        self.assertIn("risk_profile", scorecard)
+        self.assertEqual(scorecard["risk_profile"]["customer_id"], cid)
+
 
 
 if __name__ == "__main__":
