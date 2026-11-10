@@ -929,6 +929,85 @@ class StockPortfolioManager:
             "positions": projections
         }
 
+    def calculate_portfolio_drawdown_risk(
+        self,
+        customer_id: str,
+        confidence_level: float = 0.95
+    ) -> Dict[str, Any]:
+        """
+        Calculate parametric Value-at-Risk (VaR) and maximum estimated downside drawdown.
+
+        Args:
+            customer_id (str): Customer identifier.
+            confidence_level (float): Statistical confidence (0.90, 0.95, or 0.99).
+
+        Returns:
+            Dict[str, Any]: Parametric VaR risk metrics and downside analysis.
+        """
+        import math
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "confidence_level": confidence_level,
+                "estimated_daily_var": 0.0,
+                "estimated_monthly_var": 0.0,
+                "daily_var_pct": 0.0,
+                "monthly_var_pct": 0.0,
+                "risk_assessment": "Uninvested / Zero Risk"
+            }
+
+        total_val = sum(pos["current_value"] for pos in consolidated.values())
+        if total_val <= 0:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "confidence_level": confidence_level,
+                "estimated_daily_var": 0.0,
+                "estimated_monthly_var": 0.0,
+                "daily_var_pct": 0.0,
+                "monthly_var_pct": 0.0,
+                "risk_assessment": "Zero Valuation"
+            }
+
+        risk_prof = self.get_portfolio_risk_profile(customer_id)
+        hhi = risk_prof.get("herfindahl_index", 2500.0)
+
+        concentration_mult = math.sqrt(max(1.0, hhi / 2500.0))
+        daily_vol = min(0.05, 0.012 * concentration_mult)
+
+        z = 1.65
+        if confidence_level >= 0.99:
+            z = 2.33
+        elif confidence_level <= 0.90:
+            z = 1.28
+
+        daily_var = round(total_val * z * daily_vol, 2)
+        monthly_var = round(daily_var * math.sqrt(21), 2)
+        monthly_var = min(total_val, monthly_var)
+
+        daily_var_pct = round((daily_var / total_val) * 100.0, 2)
+        monthly_var_pct = round((monthly_var / total_val) * 100.0, 2)
+
+        if monthly_var_pct < 10.0:
+            assessment = "Conservative Downside Risk"
+        elif monthly_var_pct < 20.0:
+            assessment = "Moderate Downside Risk"
+        else:
+            assessment = "Elevated Downside Risk"
+
+        return {
+            "customer_id": customer_id,
+            "total_portfolio_value": total_val,
+            "confidence_level": confidence_level,
+            "estimated_daily_var": daily_var,
+            "estimated_monthly_var": monthly_var,
+            "daily_var_pct": daily_var_pct,
+            "monthly_var_pct": monthly_var_pct,
+            "risk_assessment": assessment
+        }
+
     def find_transactions_by_ticker(self, ticker: str) -> List[Dict[str, Any]]:
         """Filter and return all historical transactions matching a specific ticker."""
         sym = ticker.strip().upper()
