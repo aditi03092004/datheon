@@ -241,6 +241,30 @@ class TestHangmanGameLogic(unittest.TestCase):
         with self.assertRaises(ValueError):
             HangmanGame(secret_word="orbit", max_hints=-1)
 
+    def test_get_smart_hint_strategies(self):
+        """Verify frequency-weighted smart hints for word_frequency and english_frequency."""
+        # 1. Word frequency strategy: 'a' appears 3 times in banana
+        game_banana = HangmanGame(secret_word="banana", max_hints=2)
+        hint_word_freq = game_banana.get_smart_hint(strategy="word_frequency")
+        self.assertEqual(hint_word_freq, "a")
+        self.assertEqual(game_banana.hints_used, 1)
+
+        # 2. English letter frequency strategy: in 'rhythm', 't' appears highest in ETAOINSHRDLCUMWFGYPBVKJXQZ
+        game_rhythm = HangmanGame(secret_word="rhythm", max_hints=2)
+        hint_eng_freq = game_rhythm.get_smart_hint(strategy="english_frequency")
+        self.assertEqual(hint_eng_freq, "t")
+
+        # 3. Budget exhaustion
+        game_exhaust = HangmanGame(secret_word="code", max_hints=1)
+        self.assertIsNotNone(game_exhaust.get_smart_hint())
+        self.assertIsNone(game_exhaust.get_smart_hint())
+
+        # 4. Peek without consuming
+        game_peek = HangmanGame(secret_word="sky", max_hints=1)
+        peek_hint = game_peek.get_smart_hint(consume_budget=False)
+        self.assertIsNotNone(peek_hint)
+        self.assertEqual(game_peek.hints_used, 0)
+
 
 class TestHangmanWinAndLossConditions(unittest.TestCase):
     """Tests game termination scenarios: winning and losing."""
