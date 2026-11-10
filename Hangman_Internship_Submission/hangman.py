@@ -478,6 +478,45 @@ class HangmanGame:
             self.hints_used += 1
         return hint
 
+    ENGLISH_LETTER_FREQUENCY = "etaoinshrdlcumwfgypbvkjxqz"
+
+    def get_smart_hint(
+        self,
+        strategy: str = "english_frequency",
+        consume_budget: bool = True
+    ) -> Optional[str]:
+        """
+        Provide a strategically weighted hint from unrevealed characters.
+
+        Args:
+            strategy (str): 'english_frequency' (default) favors letters statistically common in English;
+                            'word_frequency' favors letters occurring most in the secret word.
+            consume_budget (bool): Whether this request counts towards the round's hint allowance.
+
+        Returns:
+            Optional[str]: Suggested letter or None if unavailable/budget exhausted.
+        """
+        if consume_budget and self.remaining_hints <= 0:
+            return None
+
+        unrevealed = [ch for ch in set(self.secret_word) if ch not in self.guessed_letters]
+        if not unrevealed:
+            return None
+
+        if strategy == "word_frequency":
+            freqs = self.letter_frequencies
+            unrevealed.sort(key=lambda c: (-freqs.get(c, 0), c))
+            selected = unrevealed[0]
+        else:
+            order = {ch: i for i, ch in enumerate(self.ENGLISH_LETTER_FREQUENCY)}
+            unrevealed.sort(key=lambda c: (order.get(c, 99), c))
+            selected = unrevealed[0]
+
+        if consume_budget:
+            self.hints_used += 1
+
+        return selected
+
 
 class TerminalStyle:
     """ANSI styling codes for clean terminal visual feedback."""
