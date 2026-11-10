@@ -447,6 +447,36 @@ class TestWinStreakTracker(unittest.TestCase):
         self.assertEqual(summary["total_duration"], 31.0)
         self.assertEqual(len(summary["rounds"]), 2)
 
+    def test_export_and_load_session_history_json(self):
+        """Verify exporting telemetry to JSON and restoring it into a new tracker instance."""
+        import tempfile
+        tracker = WinStreakTracker()
+        tracker.record_result(True, word="binary", duration=8.5, accuracy=75.0)
+        tracker.record_result(True, word="cipher", duration=14.0, accuracy=83.3)
+
+        with tempfile.TemporaryDirectory() as tmpdir:
+            file_path = Path(tmpdir) / "session_telemetry.json"
+            exported_summary = tracker.export_session_history_json(file_path)
+            self.assertTrue(file_path.exists())
+            self.assertEqual(exported_summary["total_games"], 2)
+            self.assertEqual(exported_summary["highest_streak"], 2)
+
+            # Load into fresh tracker
+            new_tracker = WinStreakTracker()
+            count = new_tracker.load_session_history_json(file_path)
+            self.assertEqual(count, 2)
+            self.assertEqual(new_tracker.total_games, 2)
+            self.assertEqual(new_tracker.total_wins, 2)
+            self.assertEqual(new_tracker.current_streak, 2)
+            self.assertEqual(new_tracker.highest_streak, 2)
+            self.assertEqual(len(new_tracker.history), 2)
+            self.assertEqual(new_tracker.history[0]["word"], "binary")
+
+            # Missing file error check
+            missing_path = Path(tmpdir) / "non_existent.json"
+            with self.assertRaises(FileNotFoundError):
+                new_tracker.load_session_history_json(missing_path)
+
 
 class TestWordLinguisticMetrics(unittest.TestCase):
     """Tests linguistic metrics calculation on HangmanGame."""
