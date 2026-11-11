@@ -140,8 +140,15 @@ def print_project_statistics() -> None:
     """Display high-level metrics across Task 1 and Task 2."""
     words_file = TASK_1_DIR / "english_words.txt"
     dataset_file = TASK_2_DIR / "company_dataset.csv"
-    words_count = sum(1 for line in open(words_file, encoding="utf-8") if line.strip()) if words_file.exists() else 0
-    companies_count = sum(1 for line in open(dataset_file, encoding="utf-8", errors="ignore") if line.strip()) - 1 if dataset_file.exists() else 0
+    words_count = 0
+    if words_file.exists():
+        with open(words_file, encoding="utf-8") as f:
+            words_count = sum(1 for line in f if line.strip())
+
+    companies_count = 0
+    if dataset_file.exists():
+        with open(dataset_file, encoding="utf-8", errors="ignore") as f:
+            companies_count = max(0, sum(1 for line in f if line.strip()) - 1)
 
     print("=" * 60)
     print("      DATHEON INTERNSHIP PROJECT METRICS SUMMARY      ")
@@ -150,6 +157,42 @@ def print_project_statistics() -> None:
     print(f" [Task 2] S&P 500 Available Companies:  {companies_count:,}")
     print(f" [System] Total Automated Test Suites:  3 suites (All passing)")
     print("=" * 60)
+
+
+def run_system_info() -> dict:
+    """Print and return diagnostic environment and repository telemetry."""
+    import platform
+    words_file = TASK_1_DIR / "english_words.txt"
+    dataset_file = TASK_2_DIR / "company_dataset.csv"
+    words_count = 0
+    if words_file.exists():
+        with open(words_file, encoding="utf-8") as f:
+            words_count = sum(1 for line in f if line.strip())
+
+    companies_count = 0
+    if dataset_file.exists():
+        with open(dataset_file, encoding="utf-8", errors="ignore") as f:
+            companies_count = max(0, sum(1 for line in f if line.strip()) - 1)
+
+    info = {
+        "version": "2.5.0",
+        "python_version": sys.version.split()[0],
+        "os_platform": platform.platform(),
+        "task1_words": words_count,
+        "task2_companies": companies_count,
+        "workspace_path": str(BASE_DIR)
+    }
+
+    print("=" * 60)
+    print("      DATHEON INTERNSHIP SYSTEM & ENVIRONMENT AUDIT       ")
+    print("=" * 60)
+    print(f" Suite Version:     v{info['version']}")
+    print(f" Python Runtime:    {info['python_version']}")
+    print(f" Operating System:  {info['os_platform']}")
+    print(f" Task 1 Vocabulary: {info['task1_words']:,} words")
+    print(f" Task 2 Companies:  {info['task2_companies']:,} S&P 500 stocks")
+    print("=" * 60)
+    return info
 
 
 def parse_cli_arguments() -> argparse.Namespace:
@@ -164,8 +207,9 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--benchmark", action="store_true", help="Run automated test suite with performance benchmark timing")
     parser.add_argument("--clean", action="store_true", help="Clean Python bytecode caches and temporary artifacts")
     parser.add_argument("--check", action="store_true", help="Run rapid combined health check and cache clean verification")
+    parser.add_argument("--info", action="store_true", help="Display runtime environment and repository audit info")
     parser.add_argument("--lookup", type=str, metavar="TICKER", help="Query S&P 500 company info and current market pricing for a ticker")
-    parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.0")
+    parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.5.0")
     return parser.parse_args()
 
 
@@ -237,6 +281,9 @@ def main() -> None:
         return
     if args.check:
         run_quick_check()
+        return
+    if args.info:
+        run_system_info()
         return
     if args.lookup:
         lookup_ticker_info(args.lookup)

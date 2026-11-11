@@ -52,7 +52,16 @@ class TestLauncherConfiguration(unittest.TestCase):
         from run_project import run_quick_check
         self.assertTrue(run_quick_check())
 
-
+    def test_run_system_info(self):
+        """Verify run_system_info returns telemetry dictionary with correct keys."""
+        from run_project import run_system_info
+        info = run_system_info()
+        self.assertIsInstance(info, dict)
+        self.assertEqual(info["version"], "2.5.0")
+        self.assertGreater(info["task1_words"], 0)
+        self.assertGreater(info["task2_companies"], 0)
+        self.assertIn("python_version", info)
+        self.assertIn("os_platform", info)
 
 
 if __name__ == "__main__":
