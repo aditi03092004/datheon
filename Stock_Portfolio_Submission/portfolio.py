@@ -1096,6 +1096,95 @@ class StockPortfolioManager:
 
         return sorted(filtered, key=lambda x: x.get("Timestamp", ""))
 
+    def calculate_position_size_limits(
+        self,
+        customer_id: str,
+        max_allocation_pct: float = 20.0
+    ) -> Dict[str, Any]:
+        """
+        Evaluate portfolio positions against risk management allocation limits.
+
+        Identifies overweight holdings exceeding the maximum permissible portfolio weight,
+        computing rebalancing trims in both monetary value and estimated share count.
+
+        Args:
+            customer_id (str): Customer identifier.
+            max_allocation_pct (float): Maximum allowed percentage weight for any single asset (default: 20.0%).
+
+        Returns:
+            Dict[str, Any]: Audit summary with compliance statistics and trim recommendations.
+        """
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "max_allocation_pct": max_allocation_pct,
+                "compliant_positions_count": 0,
+                "overweight_positions_count": 0,
+                "is_fully_compliant": True,
+                "recommendations": []
+            }
+
+        total_val = sum(pos["current_value"] for pos in consolidated.values())
+        if total_val <= 0:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "max_allocation_pct": max_allocation_pct,
+                "compliant_positions_count": 0,
+                "overweight_positions_count": 0,
+                "is_fully_compliant": True,
+                "recommendations": []
+            }
+
+        max_allowed_val = round(total_val * (max_allocation_pct / 100.0), 2)
+        recommendations: List[Dict[str, Any]] = []
+        compliant_count = 0
+        overweight_count = 0
+
+        for ticker, pos in consolidated.items():
+            curr_val = pos["current_value"]
+            weight_pct = round((curr_val / total_val) * 100.0, 2)
+            is_overweight = weight_pct > max_allocation_pct
+
+            if is_overweight:
+                overweight_count += 1
+                excess_val = round(curr_val - max_allowed_val, 2)
+                curr_price = pos["current_price"]
+                shares_to_trim = int(excess_val // curr_price) if curr_price > 0 else 0
+                status = "OVERWEIGHT"
+            else:
+                compliant_count += 1
+                excess_val = 0.0
+                shares_to_trim = 0
+                status = "COMPLIANT"
+
+            recommendations.append({
+                "ticker": ticker,
+                "company_name": pos["company_name"],
+                "current_shares": pos["total_quantity"],
+                "current_price": pos["current_price"],
+                "current_value": curr_val,
+                "portfolio_weight_pct": weight_pct,
+                "max_allowed_value": max_allowed_val,
+                "status": status,
+                "trim_dollar_amount": excess_val,
+                "suggested_shares_to_trim": shares_to_trim
+            })
+
+        recommendations.sort(key=lambda r: r["portfolio_weight_pct"], reverse=True)
+
+        return {
+            "customer_id": customer_id,
+            "total_portfolio_value": round(total_val, 2),
+            "max_allocation_pct": max_allocation_pct,
+            "compliant_positions_count": compliant_count,
+            "overweight_positions_count": overweight_count,
+            "is_fully_compliant": overweight_count == 0,
+            "recommendations": recommendations
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
