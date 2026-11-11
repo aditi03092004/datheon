@@ -571,6 +571,38 @@ class TestStockPortfolioTracker(unittest.TestCase):
         with self.assertRaises(ValueError):
             self.manager.get_transactions_in_date_range("invalid-date", today_str)
 
+    def test_position_size_limits_and_trim_recommendations(self):
+        """Verify position sizing limit calculations, compliance status, and trim recommendations."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty customer
+        empty_res = self.manager.calculate_position_size_limits(cid, max_allocation_pct=25.0)
+        self.assertEqual(empty_res["total_portfolio_value"], 0.0)
+        self.assertTrue(empty_res["is_fully_compliant"])
+        self.assertEqual(empty_res["overweight_positions_count"], 0)
+        self.assertEqual(empty_res["recommendations"], [])
+
+        # 2. Add two positions: AAPL 10 shares ($960), MSFT 1 share ($250)
+        self.manager.record_transaction(cid, "AAPL", 96.0, 10)
+        self.manager.record_transaction(cid, "MSFT", 250.0, 1)
+
+        # Cap at 50%: AAPL is ~79% of portfolio, so it is OVERWEIGHT
+        limits_50 = self.manager.calculate_position_size_limits(cid, max_allocation_pct=50.0)
+        self.assertFalse(limits_50["is_fully_compliant"])
+        self.assertEqual(limits_50["overweight_positions_count"], 1)
+        self.assertEqual(limits_50["compliant_positions_count"], 1)
+
+        rec_map = {r["ticker"]: r for r in limits_50["recommendations"]}
+        self.assertEqual(rec_map["AAPL"]["status"], "OVERWEIGHT")
+        self.assertGreater(rec_map["AAPL"]["trim_dollar_amount"], 0.0)
+        self.assertGreaterEqual(rec_map["AAPL"]["suggested_shares_to_trim"], 1)
+        self.assertEqual(rec_map["MSFT"]["status"], "COMPLIANT")
+        self.assertEqual(rec_map["MSFT"]["trim_dollar_amount"], 0.0)
+        self.assertEqual(rec_map["MSFT"]["suggested_shares_to_trim"], 0)
+
+        # Cap at 90%: AAPL (<90%) becomes COMPLIANT
+        limits_90 = self.manager.calculate_position_size_limits(cid, max_allocation_pct=90.0)
+        self.assertTrue(limits_90["is_fully_compliant"])
+        self.assertEqual(limits_90["overweight_positions_count"], 0)
 
 
 if __name__ == "__main__":
