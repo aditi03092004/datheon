@@ -20,7 +20,7 @@ The system empowers users to record stock purchases and sales, validate tickers 
 Stock_Portfolio_Submission/
 │
 ├── portfolio.py               # Main application: StockPortfolioManager, CLI interface, and ASCII tables
-├── test_portfolio.py          # Automated test suite (Python unittest standard library - 19 tests)
+├── test_portfolio.py          # Automated test suite (Python unittest standard library - 29 tests)
 ├── company_dataset.csv        # S&P 500 company ticker and metadata repository (503 companies)
 ├── details.txt                # Customer ID persistent registry
 ├── portfolio_summary.csv      # Transaction and portfolio history ledger
@@ -101,4 +101,5 @@ The `StockPortfolioManager` includes position ranking analytics for rapid portfo
 ### Executive Financial Scorecard & Target Rebalancing
 - **`get_customer_financial_scorecard(customer_id)`**: Generates an all-in-one financial dashboard including active position counts, total invested capital, total valuation, unrealized P/L, position win ratio, top holding ticker, and risk classification.
 - **`get_position_risk_alerts(customer_id, stop_loss_pct, take_profit_pct)`**: Scans holdings against customizable risk bounds, flagging positions requiring stop-loss protection or profit realization.
+- **`calculate_position_size_limits(customer_id, max_allocation_pct)`**: Evaluates position weights against risk management ceilings, identifying overweight assets and computing suggested dollar trims and share reduction counts.
 - **`get_rebalancing_orders(customer_id, target_sector_weights)`**: Computes dollar adjustments per sector required to align a portfolio with user-specified target asset allocation percentages.

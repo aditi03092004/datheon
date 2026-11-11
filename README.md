@@ -1,7 +1,7 @@
 # Datheon Python Programming Internship
 
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)
-![Tests Status](https://img.shields.io/badge/tests-81%20passing-brightgreen.svg)
+![Tests Status](https://img.shields.io/badge/tests-88%20passing-brightgreen.svg)
 ![Internship](https://img.shields.io/badge/Internship-Datheon-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)
 
@@ -25,6 +25,7 @@ python run_project.py
 
 CLI options:
 - `python run_project.py --doctor`    : Workspace integrity health check
+- `python run_project.py --info`      : Runtime environment & repository audit
 - `python run_project.py --stats`     : High-level metrics and dataset statistics
 - `python run_project.py --summary`   : Consolidated features and metrics snapshot
 - `python run_project.py --benchmark` : Run test suites with runtime performance benchmark
@@ -134,9 +135,9 @@ python run_project.py --doctor
 | **Architecture** | Object-Oriented State Engine | Modular Financial & Market Service | CLI Orchestrator & Diagnostics |
 | **Data Source** | 2,492 Curated English Words | 503 S&P 500 Companies Dataset | Subprocess Runners |
 | **Test Framework** | Python Standard `unittest` | Python Standard `unittest` | Python Standard `unittest` |
-| **Passing Tests** | **46 Passing Unit Tests** | **28 Passing Unit Tests** | **7 Passing Unit Tests** |
-| **Total Test Count** | \multicolumn{3}{c|}{**81 Passing Unit Tests Across All Suites**} |
-| **Key Features** | 7 Gallows Stages, Hints Budget, Complexity Score | Consolidated Cost Basis, Sales, HHI Risk Profiling | `--doctor`, `--stats`, `--clean`, Menu |
+| **Passing Tests** | **51 Passing Unit Tests** | **29 Passing Unit Tests** | **8 Passing Unit Tests** |
+| **Total Test Count** | \multicolumn{3}{c|}{**88 Passing Unit Tests Across All Suites**} |
+| **Key Features** | 7 Gallows Stages, Phonetic Metrics, Complexity Score | Position Sizing Limits, HHI Risk, Dividend Yield | `--doctor`, `--info`, `--check`, `--clean` |
 | **Offline Ready** | 100% Standard Library | 100% Standard Library Fallback | 100% Standard Library |
 
 ## Connect With Me
