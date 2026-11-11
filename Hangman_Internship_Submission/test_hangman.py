@@ -18,6 +18,7 @@ from hangman import (
     HangmanGame,
     HANGMAN_STAGES,
     calculate_word_complexity,
+    calculate_vowel_consonant_metrics,
     estimate_syllable_count,
     filter_words_by_difficulty,
     find_anagram_candidates,
@@ -630,6 +631,56 @@ class TestAnagramAndScramble(unittest.TestCase):
         pool = ["seat", "teas", "eats", "east", "west"]
         anagrams = game.find_anagrams(pool)
         self.assertEqual(sorted(anagrams), ["eats", "seat", "teas"])
+
+
+class TestPhoneticMetricsAndVowelRatio(unittest.TestCase):
+    """Tests vowel-consonant ratios, consonant clusters, and phonetic difficulty metrics."""
+
+    def test_standard_word_metrics(self):
+        """Verify metrics calculation for balanced English words."""
+        metrics = calculate_vowel_consonant_metrics("python")
+        self.assertEqual(metrics["word"], "python")
+        self.assertEqual(metrics["length"], 6)
+        self.assertEqual(metrics["vowel_count"], 1)  # 'o'
+        self.assertEqual(metrics["consonant_count"], 5)
+        self.assertAlmostEqual(metrics["vowel_ratio"], 0.17, places=2)
+        self.assertGreaterEqual(metrics["max_consonant_cluster"], 2)
+
+    def test_high_vowel_word(self):
+        """Verify metric behavior for vowel-heavy words."""
+        metrics = calculate_vowel_consonant_metrics("queue")
+        self.assertEqual(metrics["vowel_count"], 4)
+        self.assertEqual(metrics["consonant_count"], 1)
+        self.assertAlmostEqual(metrics["vowel_ratio"], 0.8, places=2)
+        self.assertEqual(metrics["max_consonant_cluster"], 1)
+        self.assertEqual(metrics["phonetic_difficulty"], "Easy")
+
+    def test_consonant_cluster_detection(self):
+        """Verify longest consonant cluster identification in complex words."""
+        metrics = calculate_vowel_consonant_metrics("rhythms")
+        self.assertEqual(metrics["vowel_count"], 0)
+        self.assertEqual(metrics["consonant_count"], 7)
+        self.assertEqual(metrics["max_consonant_cluster"], 7)
+        self.assertEqual(metrics["phonetic_difficulty"], "Challenging")
+
+    def test_invalid_and_empty_inputs(self):
+        """Verify safe defaults on empty or non-alphabetic inputs."""
+        empty_metrics = calculate_vowel_consonant_metrics("")
+        self.assertEqual(empty_metrics["length"], 0)
+        self.assertEqual(empty_metrics["phonetic_difficulty"], "Unknown")
+
+        invalid_metrics = calculate_vowel_consonant_metrics("12345!")
+        self.assertEqual(invalid_metrics["length"], 0)
+        self.assertEqual(invalid_metrics["phonetic_difficulty"], "Unknown")
+
+    def test_hangman_game_property_bindings(self):
+        """Verify HangmanGame exposes vowel ratio and consonant cluster properties."""
+        game = HangmanGame(secret_word="strengths")
+        self.assertIsInstance(game.phonetic_metrics, dict)
+        self.assertEqual(game.phonetic_metrics["word"], "strengths")
+        self.assertAlmostEqual(game.vowel_ratio, round(1 / 9, 2), places=2)
+        self.assertEqual(game.consonant_cluster_max, 5)  # "ngths" is 5 consonants
+
 
 if __name__ == "__main__":
     unittest.main()
