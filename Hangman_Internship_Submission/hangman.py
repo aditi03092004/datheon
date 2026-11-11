@@ -11,7 +11,7 @@ import random
 import sys
 from pathlib import Path
 from enum import Enum
-from typing import Optional
+from typing import Any, Optional
 
 
 class GuessResult(Enum):
@@ -346,6 +346,62 @@ def estimate_syllable_count(word: str) -> int:
     return max(1, count)
 
 
+def calculate_vowel_consonant_metrics(word: str) -> dict[str, Any]:
+    """
+    Compute linguistic phonetic metrics including vowel count, consonant count,
+    vowel-to-total ratio, longest contiguous consonant cluster, and phonetic difficulty.
+
+    Args:
+        word (str): Input English word.
+
+    Returns:
+        dict[str, Any]: Dictionary containing phonetic metrics and difficulty rating.
+    """
+    cleaned = word.strip().lower()
+    if not cleaned or not cleaned.isalpha():
+        return {
+            "word": cleaned,
+            "length": 0,
+            "vowel_count": 0,
+            "consonant_count": 0,
+            "vowel_ratio": 0.0,
+            "max_consonant_cluster": 0,
+            "phonetic_difficulty": "Unknown"
+        }
+
+    vowels = set("aeiou")
+    v_count = sum(1 for c in cleaned if c in vowels)
+    c_count = len(cleaned) - v_count
+    v_ratio = round(v_count / len(cleaned), 2)
+
+    max_cluster = 0
+    curr_cluster = 0
+    for ch in cleaned:
+        if ch not in vowels:
+            curr_cluster += 1
+            if curr_cluster > max_cluster:
+                max_cluster = curr_cluster
+        else:
+            curr_cluster = 0
+
+    if max_cluster >= 4 or v_ratio < 0.20:
+        difficulty = "Challenging"
+    elif max_cluster <= 2 and v_ratio >= 0.35:
+        difficulty = "Easy"
+    else:
+        difficulty = "Moderate"
+
+    return {
+        "word": cleaned,
+        "length": len(cleaned),
+        "vowel_count": v_count,
+        "consonant_count": c_count,
+        "vowel_ratio": v_ratio,
+        "max_consonant_cluster": max_cluster,
+        "phonetic_difficulty": difficulty
+    }
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -463,6 +519,21 @@ class HangmanGame:
     def complexity_score(self) -> float:
         """Returns the calculated complexity score (1.0 - 10.0) of the secret word."""
         return calculate_word_complexity(self.secret_word)
+
+    @property
+    def phonetic_metrics(self) -> dict[str, Any]:
+        """Returns comprehensive phonetic metrics for the secret target word."""
+        return calculate_vowel_consonant_metrics(self.secret_word)
+
+    @property
+    def vowel_ratio(self) -> float:
+        """Returns the ratio of vowels to total letters in the secret word."""
+        return self.phonetic_metrics["vowel_ratio"]
+
+    @property
+    def consonant_cluster_max(self) -> int:
+        """Returns the length of the longest consecutive consonant cluster in the secret word."""
+        return self.phonetic_metrics["max_consonant_cluster"]
 
     def get_masked_word(self, placeholder: str = "_") -> str:
         """
