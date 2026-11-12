@@ -632,6 +632,22 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertLess(high_rf["excess_return_pct"], 0.0)
         self.assertEqual(high_rf["risk_adjusted_rating"], "Suboptimal / High Risk")
 
+    def test_portfolio_beta_estimate(self):
+        """Verify portfolio beta calculation and market sensitivity classifications."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty customer
+        empty_beta = self.manager.calculate_portfolio_beta_estimate(cid)
+        self.assertEqual(empty_beta["portfolio_beta"], 1.0)
+        self.assertEqual(empty_beta["market_sensitivity"], "Uninvested / Benchmark Neutral")
+
+        # 2. Tech stock holding (AAPL: beta 1.25)
+        self.manager.record_transaction(cid, "AAPL", 150.0, 5)
+        tech_beta = self.manager.calculate_portfolio_beta_estimate(cid)
+        self.assertEqual(tech_beta["portfolio_beta"], 1.25)
+        self.assertEqual(tech_beta["market_sensitivity"], "Aggressive / High Market Sensitivity")
+        self.assertEqual(len(tech_beta["positions"]), 1)
+        self.assertEqual(tech_beta["positions"][0]["sector_beta"], 1.25)
+
 
 if __name__ == "__main__":
     unittest.main()
