@@ -1,7 +1,7 @@
 # Datheon Python Programming Internship
 
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)
-![Tests Status](https://img.shields.io/badge/tests-88%20passing-brightgreen.svg)
+![Tests Status](https://img.shields.io/badge/tests-107%20passing-brightgreen.svg)
 ![Internship](https://img.shields.io/badge/Internship-Datheon-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)
 
@@ -17,7 +17,7 @@ As a B.Tech Computer Science and Engineering student specialising in Cybersecuri
 
 ### Quick Start (Unified Launcher)
 
-You can launch either project or run the complete automated test suite (81 passing tests) directly from the repository root using the unified launcher:
+You can launch either project or run the complete automated test suite (107 passing tests) directly from the repository root using the unified launcher:
 
 ```bash
 python run_project.py
@@ -26,6 +26,8 @@ python run_project.py
 CLI options:
 - `python run_project.py --doctor`    : Workspace integrity health check
 - `python run_project.py --info`      : Runtime environment & repository audit
+- `python run_project.py --audit`     : Deep codebase structural lines-of-code audit
+- `python run_project.py --export-all`: Export consolidated project telemetry to JSON
 - `python run_project.py --stats`     : High-level metrics and dataset statistics
 - `python run_project.py --summary`   : Consolidated features and metrics snapshot
 - `python run_project.py --benchmark` : Run test suites with runtime performance benchmark
@@ -135,9 +137,9 @@ python run_project.py --doctor
 | **Architecture** | Object-Oriented State Engine | Modular Financial & Market Service | CLI Orchestrator & Diagnostics |
 | **Data Source** | 2,492 Curated English Words | 503 S&P 500 Companies Dataset | Subprocess Runners |
 | **Test Framework** | Python Standard `unittest` | Python Standard `unittest` | Python Standard `unittest` |
-| **Passing Tests** | **51 Passing Unit Tests** | **29 Passing Unit Tests** | **8 Passing Unit Tests** |
-| **Total Test Count** | \multicolumn{3}{c|}{**88 Passing Unit Tests Across All Suites**} |
-| **Key Features** | 7 Gallows Stages, Phonetic Metrics, Complexity Score | Position Sizing Limits, HHI Risk, Dividend Yield | `--doctor`, `--info`, `--check`, `--clean` |
+| **Passing Tests** | **65 Passing Unit Tests** | **32 Passing Unit Tests** | **10 Passing Unit Tests** |
+| **Total Test Count** | \multicolumn{3}{c|}{**107 Passing Unit Tests Across All Suites**} |
+| **Key Features** | Entropy, Symmetry, Gallows Stages, Phonetics | Sharpe Ratio, Beta, Liquidation, Sizing, HHI | `--doctor`, `--info`, `--audit`, `--export-all` |
 | **Offline Ready** | 100% Standard Library | 100% Standard Library Fallback | 100% Standard Library |
 
 ## Connect With Me

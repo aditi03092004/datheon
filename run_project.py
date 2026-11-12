@@ -176,7 +176,7 @@ def run_system_info() -> dict:
             companies_count = max(0, sum(1 for line in f if line.strip()) - 1)
 
     info = {
-        "version": "2.5.0",
+        "version": "3.0.0",
         "python_version": sys.version.split()[0],
         "os_platform": platform.platform(),
         "task1_words": words_count,
@@ -283,7 +283,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--audit", action="store_true", help="Perform structural lines-of-code and test density audit")
     parser.add_argument("--export-all", action="store_true", help="Export unified internship telemetry report to JSON")
     parser.add_argument("--lookup", type=str, metavar="TICKER", help="Query S&P 500 company info and current market pricing for a ticker")
-    parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.5.0")
+    parser.add_argument("--version", action="version", version="Datheon Internship Suite 3.0.0")
     return parser.parse_args()
 
 

@@ -57,7 +57,7 @@ class TestLauncherConfiguration(unittest.TestCase):
         from run_project import run_system_info
         info = run_system_info()
         self.assertIsInstance(info, dict)
-        self.assertEqual(info["version"], "2.5.0")
+        self.assertEqual(info["version"], "3.0.0")
         self.assertGreater(info["task1_words"], 0)
         self.assertGreater(info["task2_companies"], 0)
         self.assertIn("python_version", info)
