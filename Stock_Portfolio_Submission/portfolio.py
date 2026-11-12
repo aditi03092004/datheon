@@ -1185,6 +1185,80 @@ class StockPortfolioManager:
             "recommendations": recommendations
         }
 
+    def calculate_sharpe_ratio_estimate(
+        self,
+        customer_id: str,
+        risk_free_rate_pct: float = 4.0
+    ) -> Dict[str, Any]:
+        """
+        Estimate annualized Sharpe ratio and risk-adjusted excess return for customer portfolio.
+
+        Args:
+            customer_id (str): Customer identifier.
+            risk_free_rate_pct (float): Annualized baseline risk-free rate percentage (default: 4.0%).
+
+        Returns:
+            Dict[str, Any]: Sharpe ratio, excess return, annualized volatility, and rating.
+        """
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "portfolio_return_pct": 0.0,
+                "risk_free_rate_pct": risk_free_rate_pct,
+                "excess_return_pct": 0.0,
+                "annualized_volatility_pct": 0.0,
+                "sharpe_ratio": 0.0,
+                "risk_adjusted_rating": "Uninvested"
+            }
+
+        total_inv = self.get_total_invested_capital(customer_id)
+        total_val = sum(pos["current_value"] for pos in consolidated.values())
+        if total_inv <= 0 or total_val <= 0:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "portfolio_return_pct": 0.0,
+                "risk_free_rate_pct": risk_free_rate_pct,
+                "excess_return_pct": 0.0,
+                "annualized_volatility_pct": 0.0,
+                "sharpe_ratio": 0.0,
+                "risk_adjusted_rating": "Zero Valuation"
+            }
+
+        ret_pct = self.get_unrealized_profit_percentage(customer_id)
+        excess_ret = round(ret_pct - risk_free_rate_pct, 2)
+
+        risk_prof = self.get_portfolio_risk_profile(customer_id)
+        hhi = risk_prof.get("herfindahl_index", 2500.0)
+        import math
+        vol = round(max(8.0, 15.0 * math.sqrt(max(1.0, hhi / 2500.0))), 2)
+
+        sharpe = round(excess_ret / vol, 2) if vol > 0 else 0.0
+
+        if sharpe >= 1.5:
+            rating = "Excellent"
+        elif sharpe >= 1.0:
+            rating = "Good"
+        elif sharpe >= 0.5:
+            rating = "Adequate"
+        elif sharpe > 0.0:
+            rating = "Moderate"
+        else:
+            rating = "Suboptimal / High Risk"
+
+        return {
+            "customer_id": customer_id,
+            "total_portfolio_value": round(total_val, 2),
+            "portfolio_return_pct": ret_pct,
+            "risk_free_rate_pct": risk_free_rate_pct,
+            "excess_return_pct": excess_ret,
+            "annualized_volatility_pct": vol,
+            "sharpe_ratio": sharpe,
+            "risk_adjusted_rating": rating
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
