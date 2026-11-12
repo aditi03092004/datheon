@@ -1337,6 +1337,62 @@ class StockPortfolioManager:
             "positions": breakdown
         }
 
+    def simulate_position_liquidation(
+        self,
+        customer_id: str,
+        ticker: str,
+        estimated_tax_rate_pct: float = 15.0
+    ) -> Dict[str, Any]:
+        """
+        Simulate full liquidation of a position, calculating net proceeds, tax impact,
+        and post-sale residual portfolio metrics without writing to permanent storage.
+
+        Args:
+            customer_id (str): Customer identifier.
+            ticker (str): Target stock ticker.
+            estimated_tax_rate_pct (float): Estimated capital gains tax percentage (default: 15.0%).
+
+        Returns:
+            Dict[str, Any]: Comprehensive simulation report.
+
+        Raises:
+            InvalidTransactionError: If customer has no active holding for ticker.
+        """
+        ticker_clean = ticker.strip().upper()
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if ticker_clean not in consolidated or consolidated[ticker_clean]["total_quantity"] <= 0:
+            raise InvalidTransactionError(f"Customer '{customer_id}' has no active holding in {ticker_clean} to simulate.")
+
+        pos = consolidated[ticker_clean]
+        shares = pos["total_quantity"]
+        cost_basis = round(pos["average_buy_price"] * shares, 2)
+        gross_proceeds = round(pos["current_price"] * shares, 2)
+        realized_gain_loss = round(gross_proceeds - cost_basis, 2)
+
+        tax_due = round(realized_gain_loss * (estimated_tax_rate_pct / 100.0), 2) if realized_gain_loss > 0 else 0.0
+        net_proceeds = round(gross_proceeds - tax_due, 2)
+
+        total_curr_val = sum(p["current_value"] for p in consolidated.values())
+        post_sale_val = round(max(0.0, total_curr_val - gross_proceeds), 2)
+        cash_liberated_pct = round((gross_proceeds / total_curr_val * 100.0), 2) if total_curr_val > 0 else 0.0
+
+        return {
+            "customer_id": customer_id,
+            "ticker": ticker_clean,
+            "company_name": pos["company_name"],
+            "shares_liquidated": shares,
+            "execution_price": pos["current_price"],
+            "cost_basis": cost_basis,
+            "gross_proceeds": gross_proceeds,
+            "realized_gain_loss": realized_gain_loss,
+            "tax_rate_pct": estimated_tax_rate_pct,
+            "estimated_tax_due": tax_due,
+            "net_proceeds_after_tax": net_proceeds,
+            "original_portfolio_value": round(total_curr_val, 2),
+            "residual_portfolio_value": post_sale_val,
+            "cash_liberated_percentage": cash_liberated_pct
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
