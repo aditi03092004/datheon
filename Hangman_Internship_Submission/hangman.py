@@ -449,6 +449,31 @@ def calculate_letter_frequency_analysis(word: str) -> dict[str, Any]:
     }
 
 
+def calculate_pattern_similarity(pattern: str, candidate_word: str) -> float:
+    """
+    Calculate compatibility similarity percentage (0.0 to 1.0) between a masked pattern
+    and a candidate target word.
+
+    Returns:
+        float: Fraction of characters strictly matched (0.0 if character collision or length mismatch).
+    """
+    cleaned_pat = pattern.replace(" ", "").lower()
+    cleaned_cand = candidate_word.strip().lower()
+
+    if not cleaned_pat or not cleaned_cand or len(cleaned_pat) != len(cleaned_cand):
+        return 0.0
+
+    revealed_count = 0
+    for p_char, c_char in zip(cleaned_pat, cleaned_cand):
+        if p_char in ("_", "."):
+            continue
+        if p_char != c_char:
+            return 0.0
+        revealed_count += 1
+
+    return round(revealed_count / len(cleaned_cand), 2)
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -599,6 +624,10 @@ class HangmanGame:
         Allows optional custom placeholder string (default: '_').
         """
         return " ".join([char if char in self.guessed_letters else placeholder for char in self.secret_word])
+
+    def get_pattern_similarity(self, candidate_word: str) -> float:
+        """Returns pattern similarity score between current game state and a candidate word."""
+        return calculate_pattern_similarity(self.get_masked_word(), candidate_word)
 
     def get_sorted_guessed_letters(self) -> list[str]:
         """Returns a sorted list of all unique letters guessed so far."""
