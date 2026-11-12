@@ -19,6 +19,7 @@ from hangman import (
     HANGMAN_STAGES,
     calculate_word_complexity,
     calculate_vowel_consonant_metrics,
+    calculate_letter_frequency_analysis,
     estimate_syllable_count,
     filter_words_by_difficulty,
     find_anagram_candidates,
@@ -680,6 +681,43 @@ class TestPhoneticMetricsAndVowelRatio(unittest.TestCase):
         self.assertEqual(game.phonetic_metrics["word"], "strengths")
         self.assertAlmostEqual(game.vowel_ratio, round(1 / 9, 2), places=2)
         self.assertEqual(game.consonant_cluster_max, 5)  # "ngths" is 5 consonants
+
+
+class TestLetterFrequencyAndWordEntropy(unittest.TestCase):
+    """Tests letter frequency counting and Shannon information entropy calculation."""
+
+    def test_homogeneous_word_entropy_zero(self):
+        """Verify repeated single-character words have exactly 0 entropy."""
+        analysis = calculate_letter_frequency_analysis("aaaa")
+        self.assertEqual(analysis["shannon_entropy"], 0.0)
+        self.assertEqual(analysis["unique_count"], 1)
+        self.assertEqual(analysis["most_common_letter"], ("a", 4))
+
+    def test_diverse_word_entropy(self):
+        """Verify distinct letter words have positive entropy."""
+        analysis = calculate_letter_frequency_analysis("python")
+        self.assertEqual(analysis["length"], 6)
+        self.assertEqual(analysis["unique_count"], 6)
+        self.assertAlmostEqual(analysis["shannon_entropy"], 2.58, places=2)
+
+    def test_frequency_distribution(self):
+        """Verify character counts match expected distribution."""
+        analysis = calculate_letter_frequency_analysis("banana")
+        self.assertEqual(analysis["frequencies"]["a"], 3)
+        self.assertEqual(analysis["frequencies"]["n"], 2)
+        self.assertEqual(analysis["frequencies"]["b"], 1)
+        self.assertEqual(analysis["most_common_letter"], ("a", 3))
+
+    def test_invalid_input(self):
+        """Verify non-alphabetic or empty inputs yield empty defaults."""
+        self.assertEqual(calculate_letter_frequency_analysis("")["shannon_entropy"], 0.0)
+        self.assertEqual(calculate_letter_frequency_analysis("12345")["frequencies"], {})
+
+    def test_hangman_game_entropy_property(self):
+        """Verify HangmanGame integrates letter entropy and frequencies properties."""
+        game = HangmanGame(secret_word="bubble")
+        self.assertEqual(game.letter_frequencies["b"], 3)
+        self.assertGreater(game.letter_entropy, 1.0)
 
 
 if __name__ == "__main__":
