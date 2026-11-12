@@ -63,6 +63,17 @@ class TestLauncherConfiguration(unittest.TestCase):
         self.assertIn("python_version", info)
         self.assertIn("os_platform", info)
 
+    def test_run_codebase_audit(self):
+        """Verify run_codebase_audit measures Python file counts and lines of code."""
+        from run_project import run_codebase_audit
+        audit = run_codebase_audit()
+        self.assertIsInstance(audit, dict)
+        self.assertGreaterEqual(audit["python_files_count"], 5)
+        self.assertGreater(audit["total_lines_of_code"], 2000)
+        self.assertGreater(audit["task1_lines"], 500)
+        self.assertGreater(audit["task2_lines"], 1000)
+        self.assertGreater(audit["test_lines"], 500)
+
 
 if __name__ == "__main__":
     unittest.main()
