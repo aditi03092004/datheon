@@ -604,6 +604,34 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertTrue(limits_90["is_fully_compliant"])
         self.assertEqual(limits_90["overweight_positions_count"], 0)
 
+    def test_sharpe_ratio_estimation(self):
+        """Verify Sharpe ratio estimation, excess return calculations, and risk ratings."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty customer
+        empty_sharpe = self.manager.calculate_sharpe_ratio_estimate(cid)
+        self.assertEqual(empty_sharpe["sharpe_ratio"], 0.0)
+        self.assertEqual(empty_sharpe["risk_adjusted_rating"], "Uninvested")
+
+        # 2. Recorded position
+        self.manager.record_transaction(cid, "AAPL", 50.0, 10)
+        sharpe_res = self.manager.calculate_sharpe_ratio_estimate(cid, risk_free_rate_pct=4.0)
+        self.assertGreater(sharpe_res["total_portfolio_value"], 0.0)
+        self.assertIn("portfolio_return_pct", sharpe_res)
+        self.assertIn("excess_return_pct", sharpe_res)
+        self.assertIn("sharpe_ratio", sharpe_res)
+        self.assertIn("risk_adjusted_rating", sharpe_res)
+
+        # 3. Favorable hurdle yielding positive Sharpe
+        low_rf = self.manager.calculate_sharpe_ratio_estimate(cid, risk_free_rate_pct=-20.0)
+        self.assertGreater(low_rf["excess_return_pct"], 0.0)
+        self.assertGreater(low_rf["sharpe_ratio"], 0.0)
+        self.assertIn(low_rf["risk_adjusted_rating"], ["Good", "Excellent", "Adequate", "Moderate"])
+
+        # 4. High hurdle yielding negative Sharpe
+        high_rf = self.manager.calculate_sharpe_ratio_estimate(cid, risk_free_rate_pct=100.0)
+        self.assertLess(high_rf["excess_return_pct"], 0.0)
+        self.assertEqual(high_rf["risk_adjusted_rating"], "Suboptimal / High Risk")
+
 
 if __name__ == "__main__":
     unittest.main()
