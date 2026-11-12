@@ -20,6 +20,7 @@ from hangman import (
     calculate_word_complexity,
     calculate_vowel_consonant_metrics,
     calculate_letter_frequency_analysis,
+    calculate_pattern_similarity,
     estimate_syllable_count,
     filter_words_by_difficulty,
     find_anagram_candidates,
@@ -718,6 +719,37 @@ class TestLetterFrequencyAndWordEntropy(unittest.TestCase):
         game = HangmanGame(secret_word="bubble")
         self.assertEqual(game.letter_frequencies["b"], 3)
         self.assertGreater(game.letter_entropy, 1.0)
+
+
+class TestPatternSimilarity(unittest.TestCase):
+    """Tests masked pattern similarity calculation against candidate words."""
+
+    def test_full_match_similarity(self):
+        """Verify completely revealed word returns 1.0 similarity."""
+        sim = calculate_pattern_similarity("p y t h o n", "python")
+        self.assertEqual(sim, 1.0)
+
+    def test_partial_match_similarity(self):
+        """Verify partially revealed word returns proportional similarity."""
+        sim = calculate_pattern_similarity("p _ t _ o _", "python")
+        self.assertEqual(sim, 0.5)  # 3 of 6 revealed and matching
+
+    def test_mismatch_collision_returns_zero(self):
+        """Verify character collision with pattern returns 0.0."""
+        sim = calculate_pattern_similarity("p _ t _ o _", "action")
+        self.assertEqual(sim, 0.0)
+
+    def test_length_mismatch_returns_zero(self):
+        """Verify differing string lengths return 0.0."""
+        self.assertEqual(calculate_pattern_similarity("p _ t", "python"), 0.0)
+
+    def test_game_integration_method(self):
+        """Verify HangmanGame get_pattern_similarity reflects active guesses."""
+        game = HangmanGame(secret_word="planet")
+        game.process_guess("p")
+        game.process_guess("l")
+        self.assertAlmostEqual(game.get_pattern_similarity("planet"), round(2 / 6, 2))
+        self.assertEqual(game.get_pattern_similarity("orange"), 0.0)
 
 
 if __name__ == "__main__":
