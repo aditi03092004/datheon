@@ -74,6 +74,20 @@ class TestLauncherConfiguration(unittest.TestCase):
         self.assertGreater(audit["task2_lines"], 1000)
         self.assertGreater(audit["test_lines"], 500)
 
+    def test_export_consolidated_telemetry(self):
+        """Verify export_consolidated_telemetry generates valid JSON artifact."""
+        import tempfile, json
+        from run_project import export_consolidated_telemetry
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            tmp_target = Path(tmp_dir) / "test_report.json"
+            res_path = export_consolidated_telemetry(destination_path=tmp_target)
+            self.assertTrue(res_path.exists())
+            with open(res_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            self.assertIn("environment", data)
+            self.assertIn("codebase_audit", data)
+            self.assertEqual(data["codebase_audit"]["python_files_count"], 6)
+
 
 if __name__ == "__main__":
     unittest.main()

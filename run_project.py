@@ -11,6 +11,7 @@ import os
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -237,6 +238,35 @@ def run_codebase_audit() -> dict:
     return audit_stats
 
 
+def export_consolidated_telemetry(destination_path: Optional[Path] = None) -> Path:
+    """Export unified telemetry report including system audit, project stats, and timestamp to JSON."""
+    import json
+    from datetime import datetime
+    dest = destination_path or (BASE_DIR / "internship_telemetry.json")
+
+    audit = run_codebase_audit()
+    env_info = run_system_info()
+
+    payload = {
+        "generated_at": datetime.now().isoformat(),
+        "project_suite": "Datheon Python Programming Internship",
+        "environment": env_info,
+        "codebase_audit": audit,
+        "tasks": {
+            "task1": "Hangman Game (Object-Oriented Terminal Application)",
+            "task2": "Stock Portfolio Tracker (Investment Management Engine)"
+        }
+    }
+
+    with open(dest, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2)
+
+    print("=" * 60)
+    print(f" Telemetry Exported Successfully to: {dest.name}")
+    print("=" * 60)
+    return dest
+
+
 def parse_cli_arguments() -> argparse.Namespace:
     """Configure and parse command-line flags."""
     parser = argparse.ArgumentParser(description="Datheon Internship Project CLI Launcher")
@@ -251,6 +281,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--check", action="store_true", help="Run rapid combined health check and cache clean verification")
     parser.add_argument("--info", action="store_true", help="Display runtime environment and repository audit info")
     parser.add_argument("--audit", action="store_true", help="Perform structural lines-of-code and test density audit")
+    parser.add_argument("--export-all", action="store_true", help="Export unified internship telemetry report to JSON")
     parser.add_argument("--lookup", type=str, metavar="TICKER", help="Query S&P 500 company info and current market pricing for a ticker")
     parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.5.0")
     return parser.parse_args()
@@ -330,6 +361,9 @@ def main() -> None:
         return
     if args.audit:
         run_codebase_audit()
+        return
+    if getattr(args, "export_all", False):
+        export_consolidated_telemetry()
         return
     if args.lookup:
         lookup_ticker_info(args.lookup)
