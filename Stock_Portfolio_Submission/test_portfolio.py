@@ -648,6 +648,27 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertEqual(len(tech_beta["positions"]), 1)
         self.assertEqual(tech_beta["positions"][0]["sector_beta"], 1.25)
 
+    def test_simulate_position_liquidation(self):
+        """Verify position liquidation simulation arithmetic, tax calculations, and error checks."""
+        from portfolio import InvalidTransactionError
+        cid = self.manager.generate_customer_id()
+        # 1. Error on unheld ticker
+        with self.assertRaises(InvalidTransactionError):
+            self.manager.simulate_position_liquidation(cid, "AAPL")
+
+        # 2. Add position and simulate sale
+        self.manager.record_transaction(cid, "AAPL", 100.0, 5)
+        sim = self.manager.simulate_position_liquidation(cid, "AAPL", estimated_tax_rate_pct=20.0)
+        self.assertEqual(sim["ticker"], "AAPL")
+        self.assertEqual(sim["shares_liquidated"], 5)
+        self.assertEqual(sim["cost_basis"], 500.0)
+        self.assertGreater(sim["gross_proceeds"], 0.0)
+        self.assertIn("realized_gain_loss", sim)
+        self.assertIn("estimated_tax_due", sim)
+        self.assertIn("net_proceeds_after_tax", sim)
+        self.assertGreaterEqual(sim["cash_liberated_percentage"], 99.0)  # Only 1 holding = 100%
+        self.assertEqual(sim["residual_portfolio_value"], 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
