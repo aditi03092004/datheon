@@ -474,6 +474,41 @@ def calculate_pattern_similarity(pattern: str, candidate_word: str) -> float:
     return round(revealed_count / len(cleaned_cand), 2)
 
 
+def check_word_symmetry(word: str) -> dict[str, Any]:
+    """
+    Analyze morphological symmetry of an English word, determining whether
+    it is a palindrome and calculating matching mirrored character pairs.
+
+    Returns:
+        dict[str, Any]: is_palindrome (bool), symmetry_ratio (float), mirrored_pairs_count (int).
+    """
+    cleaned = word.strip().lower()
+    if not cleaned or not cleaned.isalpha():
+        return {
+            "word": cleaned,
+            "is_palindrome": False,
+            "symmetry_ratio": 0.0,
+            "mirrored_pairs_count": 0
+        }
+
+    is_pal = cleaned == cleaned[::-1]
+    n = len(cleaned)
+    half = n // 2
+    matching = 0
+    for i in range(half):
+        if cleaned[i] == cleaned[n - 1 - i]:
+            matching += 1
+
+    ratio = round(matching / half, 2) if half > 0 else 1.0
+
+    return {
+        "word": cleaned,
+        "is_palindrome": is_pal,
+        "symmetry_ratio": ratio,
+        "mirrored_pairs_count": matching
+    }
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -616,6 +651,16 @@ class HangmanGame:
     def letter_entropy(self) -> float:
         """Returns the Shannon entropy (in bits) of character distribution in secret word."""
         return calculate_letter_frequency_analysis(self.secret_word)["shannon_entropy"]
+
+    @property
+    def is_palindrome(self) -> bool:
+        """Returns True if the secret target word is a palindrome."""
+        return self.secret_word == self.secret_word[::-1]
+
+    @property
+    def symmetry_metrics(self) -> dict[str, Any]:
+        """Returns morphological symmetry analysis for the secret target word."""
+        return check_word_symmetry(self.secret_word)
 
     def get_masked_word(self, placeholder: str = "_") -> str:
         """
