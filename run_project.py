@@ -195,6 +195,48 @@ def run_system_info() -> dict:
     return info
 
 
+def run_codebase_audit() -> dict:
+    """Perform a deep codebase structural audit measuring lines of code, test density, and health."""
+    audit_stats = {
+        "python_files_count": 0,
+        "total_lines_of_code": 0,
+        "task1_lines": 0,
+        "task2_lines": 0,
+        "test_lines": 0,
+        "launcher_lines": 0
+    }
+
+    for path in BASE_DIR.glob("**/*.py"):
+        if "__pycache__" in str(path):
+            continue
+        audit_stats["python_files_count"] += 1
+        with open(path, "r", encoding="utf-8", errors="ignore") as f:
+            lines = sum(1 for _ in f)
+        audit_stats["total_lines_of_code"] += lines
+
+        rel = str(path.relative_to(BASE_DIR))
+        if "test_" in rel:
+            audit_stats["test_lines"] += lines
+        elif "Hangman_Internship_Submission" in rel:
+            audit_stats["task1_lines"] += lines
+        elif "Stock_Portfolio_Submission" in rel:
+            audit_stats["task2_lines"] += lines
+        else:
+            audit_stats["launcher_lines"] += lines
+
+    print("=" * 60)
+    print("        DATHEON INTERNSHIP CODEBASE STRUCTURAL AUDIT        ")
+    print("=" * 60)
+    print(f" Total Python Files:     {audit_stats['python_files_count']}")
+    print(f" Total Lines of Code:    {audit_stats['total_lines_of_code']:,}")
+    print(f" Task 1 (Hangman):       {audit_stats['task1_lines']:,} lines")
+    print(f" Task 2 (Portfolio):     {audit_stats['task2_lines']:,} lines")
+    print(f" Test Suites:            {audit_stats['test_lines']:,} lines")
+    print(f" Launcher Utilities:     {audit_stats['launcher_lines']:,} lines")
+    print("=" * 60)
+    return audit_stats
+
+
 def parse_cli_arguments() -> argparse.Namespace:
     """Configure and parse command-line flags."""
     parser = argparse.ArgumentParser(description="Datheon Internship Project CLI Launcher")
@@ -208,6 +250,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--clean", action="store_true", help="Clean Python bytecode caches and temporary artifacts")
     parser.add_argument("--check", action="store_true", help="Run rapid combined health check and cache clean verification")
     parser.add_argument("--info", action="store_true", help="Display runtime environment and repository audit info")
+    parser.add_argument("--audit", action="store_true", help="Perform structural lines-of-code and test density audit")
     parser.add_argument("--lookup", type=str, metavar="TICKER", help="Query S&P 500 company info and current market pricing for a ticker")
     parser.add_argument("--version", action="version", version="Datheon Internship Suite 2.5.0")
     return parser.parse_args()
@@ -284,6 +327,9 @@ def main() -> None:
         return
     if args.info:
         run_system_info()
+        return
+    if args.audit:
+        run_codebase_audit()
         return
     if args.lookup:
         lookup_ticker_info(args.lookup)
