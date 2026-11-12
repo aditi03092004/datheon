@@ -1259,6 +1259,84 @@ class StockPortfolioManager:
             "risk_adjusted_rating": rating
         }
 
+    SECTOR_BETA_BENCHMARKS: Dict[str, float] = {
+        "Information Technology": 1.25,
+        "Consumer Discretionary": 1.20,
+        "Communication Services": 1.15,
+        "Financials": 1.10,
+        "Industrials": 1.05,
+        "Energy": 1.05,
+        "Materials": 1.00,
+        "Real Estate": 0.85,
+        "Health Care": 0.80,
+        "Consumer Staples": 0.65,
+        "Utilities": 0.55
+    }
+
+    def calculate_portfolio_beta_estimate(self, customer_id: str) -> Dict[str, Any]:
+        """
+        Estimate portfolio market beta and systemic market sensitivity based on sector weighting.
+
+        Args:
+            customer_id (str): Customer identifier.
+
+        Returns:
+            Dict[str, Any]: Weighted portfolio beta, classification, and position sensitivity breakdown.
+        """
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "portfolio_beta": 1.0,
+                "market_sensitivity": "Uninvested / Benchmark Neutral",
+                "positions": []
+            }
+
+        total_val = sum(pos["current_value"] for pos in consolidated.values())
+        if total_val <= 0:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "portfolio_beta": 1.0,
+                "market_sensitivity": "Zero Valuation",
+                "positions": []
+            }
+
+        weighted_beta_sum = 0.0
+        breakdown: List[Dict[str, Any]] = []
+
+        for ticker, pos in consolidated.items():
+            sector = pos.get("sector", "General")
+            stock_beta = self.SECTOR_BETA_BENCHMARKS.get(sector, 1.0)
+            weight = pos["current_value"] / total_val
+            weighted_beta_sum += weight * stock_beta
+
+            breakdown.append({
+                "ticker": ticker,
+                "company_name": pos["company_name"],
+                "sector": sector,
+                "current_value": pos["current_value"],
+                "portfolio_weight_pct": round(weight * 100.0, 2),
+                "sector_beta": stock_beta
+            })
+
+        portfolio_beta = round(weighted_beta_sum, 2)
+        if portfolio_beta < 0.85:
+            sensitivity = "Defensive / Low Market Sensitivity"
+        elif portfolio_beta <= 1.15:
+            sensitivity = "Market Neutral / Balanced"
+        else:
+            sensitivity = "Aggressive / High Market Sensitivity"
+
+        return {
+            "customer_id": customer_id,
+            "total_portfolio_value": round(total_val, 2),
+            "portfolio_beta": portfolio_beta,
+            "market_sensitivity": sensitivity,
+            "positions": breakdown
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
