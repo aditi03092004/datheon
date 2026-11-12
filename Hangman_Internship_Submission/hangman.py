@@ -6,6 +6,7 @@ An independent, object-oriented implementation of the classic Hangman word-guess
 """
 
 import json
+import math
 import os
 import random
 import sys
@@ -402,6 +403,52 @@ def calculate_vowel_consonant_metrics(word: str) -> dict[str, Any]:
     }
 
 
+def calculate_letter_frequency_analysis(word: str) -> dict[str, Any]:
+    """
+    Compute per-character frequency distribution, unique character diversity,
+    and Shannon information entropy for a candidate word.
+
+    Args:
+        word (str): Input English word.
+
+    Returns:
+        dict[str, Any]: Dictionary containing frequencies, unique count, most common character,
+                        and Shannon entropy in bits (rounded to 2 decimal places).
+    """
+    cleaned = word.strip().lower()
+    if not cleaned or not cleaned.isalpha():
+        return {
+            "word": cleaned,
+            "length": 0,
+            "frequencies": {},
+            "unique_count": 0,
+            "most_common_letter": None,
+            "shannon_entropy": 0.0
+        }
+
+    freqs: dict[str, int] = {}
+    for char in cleaned:
+        freqs[char] = freqs.get(char, 0) + 1
+
+    total_chars = len(cleaned)
+    entropy = 0.0
+    for count in freqs.values():
+        prob = count / total_chars
+        entropy -= prob * math.log2(prob)
+
+    sorted_freqs = sorted(freqs.items(), key=lambda item: (-item[1], item[0]))
+    most_common = sorted_freqs[0] if sorted_freqs else None
+
+    return {
+        "word": cleaned,
+        "length": total_chars,
+        "frequencies": freqs,
+        "unique_count": len(freqs),
+        "most_common_letter": most_common,
+        "shannon_entropy": round(entropy, 2)
+    }
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -534,6 +581,16 @@ class HangmanGame:
     def consonant_cluster_max(self) -> int:
         """Returns the length of the longest consecutive consonant cluster in the secret word."""
         return self.phonetic_metrics["max_consonant_cluster"]
+
+    @property
+    def letter_frequencies(self) -> dict[str, int]:
+        """Returns letter frequency distribution for the secret target word."""
+        return calculate_letter_frequency_analysis(self.secret_word)["frequencies"]
+
+    @property
+    def letter_entropy(self) -> float:
+        """Returns the Shannon entropy (in bits) of character distribution in secret word."""
+        return calculate_letter_frequency_analysis(self.secret_word)["shannon_entropy"]
 
     def get_masked_word(self, placeholder: str = "_") -> str:
         """
