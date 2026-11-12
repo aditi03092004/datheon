@@ -21,6 +21,7 @@ from hangman import (
     calculate_vowel_consonant_metrics,
     calculate_letter_frequency_analysis,
     calculate_pattern_similarity,
+    check_word_symmetry,
     estimate_syllable_count,
     filter_words_by_difficulty,
     find_anagram_candidates,
@@ -750,6 +751,38 @@ class TestPatternSimilarity(unittest.TestCase):
         game.process_guess("l")
         self.assertAlmostEqual(game.get_pattern_similarity("planet"), round(2 / 6, 2))
         self.assertEqual(game.get_pattern_similarity("orange"), 0.0)
+
+
+class TestWordSymmetryAndPalindrome(unittest.TestCase):
+    """Tests palindrome detection and morphological symmetry analysis."""
+
+    def test_palindrome_detection_true(self):
+        """Verify palindromic words are correctly identified."""
+        res = check_word_symmetry("racecar")
+        self.assertTrue(res["is_palindrome"])
+        self.assertEqual(res["symmetry_ratio"], 1.0)
+        self.assertEqual(res["mirrored_pairs_count"], 3)
+
+    def test_non_palindrome_detection(self):
+        """Verify non-palindromic words return False."""
+        res = check_word_symmetry("python")
+        self.assertFalse(res["is_palindrome"])
+        self.assertEqual(res["mirrored_pairs_count"], 0)
+        self.assertEqual(res["symmetry_ratio"], 0.0)
+
+    def test_invalid_and_empty_inputs(self):
+        """Verify safe handling of empty or non-alphabetic strings."""
+        self.assertFalse(check_word_symmetry("")["is_palindrome"])
+        self.assertFalse(check_word_symmetry("12321")["is_palindrome"])
+
+    def test_hangman_game_palindrome_properties(self):
+        """Verify HangmanGame exposes is_palindrome and symmetry_metrics."""
+        game_pal = HangmanGame(secret_word="kayak")
+        self.assertTrue(game_pal.is_palindrome)
+        self.assertEqual(game_pal.symmetry_metrics["mirrored_pairs_count"], 2)
+
+        game_normal = HangmanGame(secret_word="guitar")
+        self.assertFalse(game_normal.is_palindrome)
 
 
 if __name__ == "__main__":
