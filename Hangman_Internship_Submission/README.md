@@ -20,7 +20,7 @@ The application allows a user to guess a hidden English word one letter at a tim
 Hangman_Internship_Submission/
 │
 ├── hangman.py             # Main application: game engine, rendering, and interactive CLI
-├── test_hangman.py        # Automated test suite (Python unittest standard library - 51 tests)
+├── test_hangman.py        # Automated test suite (Python unittest standard library - 65 tests)
 ├── english_words.txt      # Curated dictionary of 2,400+ clean, diverse English words
 └── README.md              # Project documentation, execution, and evaluation guide
 ```
@@ -36,6 +36,9 @@ Hangman_Internship_Submission/
 ---
 
 ## 3. Core Features & Compliance
+- **Letter Frequency & Shannon Entropy:** `calculate_letter_frequency_analysis` quantifies letter distribution and information entropy in bits.
+- **Masked Pattern Similarity Scoring:** `calculate_pattern_similarity` computes compatibility alignment between masked patterns and candidates.
+- **Morphological Symmetry & Palindromes:** `check_word_symmetry` detects mirrored character pairs and palindrome properties.
 - **Phonetic Metrics & Vowel-Consonant Ratio:** `calculate_vowel_consonant_metrics` analyzes vowel balance, longest consonant clusters, and phonetic difficulty.
 - **Word Complexity Scorer:** `calculate_word_complexity` grades secret words on a 1.0 to 10.0 scale.
 - **Word Pattern Candidate Matcher:** `find_pattern_matches` inspects current masked words with wildcards and excludes bad letters to identify valid dictionary candidates.
