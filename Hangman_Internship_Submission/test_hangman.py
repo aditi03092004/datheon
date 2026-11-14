@@ -21,10 +21,12 @@ from hangman import (
     calculate_vowel_consonant_metrics,
     calculate_letter_frequency_analysis,
     calculate_pattern_similarity,
+    calculate_edit_distance,
     check_word_symmetry,
     estimate_syllable_count,
     filter_words_by_difficulty,
     find_anagram_candidates,
+    find_closest_dictionary_words,
     find_pattern_matches,
     load_words,
 )
@@ -783,6 +785,43 @@ class TestWordSymmetryAndPalindrome(unittest.TestCase):
 
         game_normal = HangmanGame(secret_word="guitar")
         self.assertFalse(game_normal.is_palindrome)
+
+
+class TestEditDistanceAndFuzzyMatching(unittest.TestCase):
+    """Tests Levenshtein edit distance and closest word candidate ranking."""
+
+    def test_identical_words_distance_zero(self):
+        """Verify distance between identical words is 0."""
+        self.assertEqual(calculate_edit_distance("python", "python"), 0)
+
+    def test_single_edit_operations(self):
+        """Verify substitution, insertion, and deletion distances."""
+        self.assertEqual(calculate_edit_distance("cat", "bat"), 1)  # substitution
+        self.assertEqual(calculate_edit_distance("cat", "cats"), 1)  # insertion
+        self.assertEqual(calculate_edit_distance("cats", "cat"), 1)  # deletion
+        self.assertEqual(calculate_edit_distance("kitten", "sitting"), 3)
+
+    def test_empty_string_distance(self):
+        """Verify empty string distance equals length of other string."""
+        self.assertEqual(calculate_edit_distance("", "python"), 6)
+        self.assertEqual(calculate_edit_distance("python", ""), 6)
+
+    def test_find_closest_dictionary_words(self):
+        """Verify closest dictionary matching ranks and limits results."""
+        pool = ["cat", "bat", "hat", "car", "dog", "elephant"]
+        matches = find_closest_dictionary_words("cat", pool, max_distance=1, top_k=3)
+        self.assertEqual(len(matches), 3)
+        # Verify distance is 1 for all returned
+        for word, dist in matches:
+            self.assertEqual(dist, 1)
+
+    def test_game_find_closest_matches_integration(self):
+        """Verify HangmanGame integration method returns closest words."""
+        game = HangmanGame(secret_word="play")
+        pool = ["plan", "plat", "clay", "player", "work"]
+        matches = game.find_closest_matches(pool, max_distance=1, top_k=3)
+        self.assertGreaterEqual(len(matches), 1)
+        self.assertIn("clay", [w for w, d in matches])
 
 
 if __name__ == "__main__":
