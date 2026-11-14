@@ -1461,6 +1461,82 @@ class StockPortfolioManager:
             "treynor_rating": rating
         }
 
+    def calculate_sortino_ratio_estimate(
+        self,
+        customer_id: str,
+        target_return_pct: float = 0.0
+    ) -> Dict[str, Any]:
+        """
+        Estimate the Sortino ratio evaluating risk-adjusted return penalizing only downside volatility.
+
+        Args:
+            customer_id (str): Customer identifier.
+            target_return_pct (float): Minimum acceptable return (hurdle) percentage (default: 0.0%).
+
+        Returns:
+            Dict[str, Any]: Sortino ratio, downside deviation, excess return, and rating classification.
+        """
+        import math
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "portfolio_return_pct": 0.0,
+                "target_return_pct": target_return_pct,
+                "excess_return_pct": 0.0,
+                "downside_deviation_pct": 0.0,
+                "sortino_ratio": 0.0,
+                "sortino_rating": "Uninvested"
+            }
+
+        total_val = sum(pos["current_value"] for pos in consolidated.values())
+        if total_val <= 0:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "portfolio_return_pct": 0.0,
+                "target_return_pct": target_return_pct,
+                "excess_return_pct": 0.0,
+                "downside_deviation_pct": 0.0,
+                "sortino_ratio": 0.0,
+                "sortino_rating": "Zero Valuation"
+            }
+
+        ret_pct = self.get_unrealized_profit_percentage(customer_id)
+        excess_ret = round(ret_pct - target_return_pct, 2)
+
+        weighted_downside_sq = 0.0
+        for pos in consolidated.values():
+            pos_ret = pos["return_percentage"]
+            if pos_ret < target_return_pct:
+                downside_diff = target_return_pct - pos_ret
+                weight = pos["current_value"] / total_val
+                weighted_downside_sq += weight * (downside_diff ** 2)
+
+        downside_vol = round(max(3.0, math.sqrt(weighted_downside_sq)), 2)
+        sortino = round(excess_ret / downside_vol, 2) if downside_vol > 0 else 0.0
+
+        if sortino >= 2.0:
+            rating = "Outstanding Downside Protection"
+        elif sortino >= 1.0:
+            rating = "Solid Downside Cushion"
+        elif sortino >= 0.0:
+            rating = "Positive Adjusted Return"
+        else:
+            rating = "Vulnerable to Drawdowns"
+
+        return {
+            "customer_id": customer_id,
+            "total_portfolio_value": round(total_val, 2),
+            "portfolio_return_pct": ret_pct,
+            "target_return_pct": target_return_pct,
+            "excess_return_pct": excess_ret,
+            "downside_deviation_pct": downside_vol,
+            "sortino_ratio": sortino,
+            "sortino_rating": rating
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
