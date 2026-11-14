@@ -644,6 +644,48 @@ def analyze_word_affixes(word: str) -> dict[str, Any]:
     }
 
 
+def calculate_phonetic_harshness_index(word: str) -> dict[str, Any]:
+    """
+    Quantify phonetic harshness and guttural/plosive friction of a word.
+
+    Harsh letters: plosives ('p', 't', 'k', 'b', 'd', 'g') and fricatives/affricates ('z', 'x', 'q').
+    Soft letters: liquids ('l', 'r'), nasals ('m', 'n'), glides ('w', 'y'), and vowels ('a', 'e', 'i', 'o', 'u').
+
+    Returns:
+        dict[str, Any]: harsh_count, soft_count, harshness_ratio (0.0 to 1.0),
+                        and harshness_classification ("Melodic / Soft", "Balanced", "Harsh / Guttural").
+    """
+    cleaned = word.strip().lower()
+    if not cleaned or not cleaned.isalpha():
+        return {
+            "word": cleaned,
+            "harsh_count": 0,
+            "soft_count": 0,
+            "harshness_ratio": 0.0,
+            "harshness_classification": "Neutral"
+        }
+
+    harsh_set = set("ptkbdgzxq")
+    harsh_c = sum(1 for ch in cleaned if ch in harsh_set)
+    soft_c = len(cleaned) - harsh_c
+    ratio = round(harsh_c / len(cleaned), 2)
+
+    if ratio >= 0.50:
+        classification = "Harsh / Guttural"
+    elif ratio <= 0.25:
+        classification = "Melodic / Soft"
+    else:
+        classification = "Balanced"
+
+    return {
+        "word": cleaned,
+        "harsh_count": harsh_c,
+        "soft_count": soft_c,
+        "harshness_ratio": ratio,
+        "harshness_classification": classification
+    }
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -806,6 +848,11 @@ class HangmanGame:
     def root_stem(self) -> str:
         """Returns the identified root stem after removing common prefixes and suffixes."""
         return self.affix_analysis["root_stem"]
+
+    @property
+    def phonetic_harshness(self) -> dict[str, Any]:
+        """Returns phonetic harshness and auditory texture analysis for secret word."""
+        return calculate_phonetic_harshness_index(self.secret_word)
 
     def get_masked_word(self, placeholder: str = "_") -> str:
         """
