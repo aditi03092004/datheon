@@ -689,6 +689,27 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertLess(neg_treynor["excess_return_pct"], 0.0)
         self.assertEqual(neg_treynor["treynor_rating"], "Underperforming Risk-Free Hurdle")
 
+    def test_sortino_ratio_estimation(self):
+        """Verify Sortino ratio calculation evaluating return over downside deviation."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty customer
+        empty_sortino = self.manager.calculate_sortino_ratio_estimate(cid)
+        self.assertEqual(empty_sortino["sortino_ratio"], 0.0)
+        self.assertEqual(empty_sortino["sortino_rating"], "Uninvested")
+
+        # 2. Add position and evaluate with low hurdle
+        self.manager.record_transaction(cid, "AAPL", 100.0, 5)
+        pos_sortino = self.manager.calculate_sortino_ratio_estimate(cid, target_return_pct=-20.0)
+        self.assertGreater(pos_sortino["excess_return_pct"], 0.0)
+        self.assertGreater(pos_sortino["sortino_ratio"], 0.0)
+        self.assertGreater(pos_sortino["downside_deviation_pct"], 0.0)
+        self.assertIn(pos_sortino["sortino_rating"], ["Outstanding Downside Protection", "Solid Downside Cushion", "Positive Adjusted Return"])
+
+        # 3. High hurdle
+        neg_sortino = self.manager.calculate_sortino_ratio_estimate(cid, target_return_pct=50.0)
+        self.assertLess(neg_sortino["excess_return_pct"], 0.0)
+        self.assertEqual(neg_sortino["sortino_rating"], "Vulnerable to Drawdowns")
+
 
 if __name__ == "__main__":
     unittest.main()
