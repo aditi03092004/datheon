@@ -710,6 +710,27 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertLess(neg_sortino["excess_return_pct"], 0.0)
         self.assertEqual(neg_sortino["sortino_rating"], "Vulnerable to Drawdowns")
 
+    def test_simulate_cash_deposit_and_deployment(self):
+        """Verify capital deployment simulation, budget apportionment, and validation checks."""
+        from portfolio import InvalidTransactionError, InvalidTickerError
+        cid = self.manager.generate_customer_id()
+
+        # 1. Negative deposit error
+        with self.assertRaises(InvalidTransactionError):
+            self.manager.simulate_cash_deposit_and_deployment(cid, cash_deposit=-100.0, target_allocations={"AAPL": 100.0})
+
+        # 2. Invalid ticker error
+        with self.assertRaises(InvalidTickerError):
+            self.manager.simulate_cash_deposit_and_deployment(cid, cash_deposit=1000.0, target_allocations={"INVALID_TICKER_XYZ": 100.0})
+
+        # 3. Valid deployment across two stocks
+        targets = {"AAPL": 60.0, "MSFT": 40.0}
+        plan = self.manager.simulate_cash_deposit_and_deployment(cid, cash_deposit=1000.0, target_allocations=targets)
+        self.assertEqual(plan["cash_deposited"], 1000.0)
+        self.assertGreater(plan["total_cash_invested"], 0.0)
+        self.assertGreaterEqual(plan["residual_cash_uninvested"], 0.0)
+        self.assertEqual(len(plan["deployment_actions"]), 2)
+
 
 if __name__ == "__main__":
     unittest.main()
