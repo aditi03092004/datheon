@@ -1393,6 +1393,74 @@ class StockPortfolioManager:
             "cash_liberated_percentage": cash_liberated_pct
         }
 
+    def calculate_treynor_ratio_estimate(
+        self,
+        customer_id: str,
+        risk_free_rate_pct: float = 4.0
+    ) -> Dict[str, Any]:
+        """
+        Estimate the Treynor ratio measuring risk-adjusted excess returns per unit of systematic risk (Beta).
+
+        Args:
+            customer_id (str): Customer identifier.
+            risk_free_rate_pct (float): Baseline risk-free rate percentage (default: 4.0%).
+
+        Returns:
+            Dict[str, Any]: Treynor ratio metrics and rating classification.
+        """
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "portfolio_return_pct": 0.0,
+                "risk_free_rate_pct": risk_free_rate_pct,
+                "excess_return_pct": 0.0,
+                "portfolio_beta": 1.0,
+                "treynor_ratio": 0.0,
+                "treynor_rating": "Uninvested"
+            }
+
+        total_val = sum(pos["current_value"] for pos in consolidated.values())
+        if total_val <= 0:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "portfolio_return_pct": 0.0,
+                "risk_free_rate_pct": risk_free_rate_pct,
+                "excess_return_pct": 0.0,
+                "portfolio_beta": 1.0,
+                "treynor_ratio": 0.0,
+                "treynor_rating": "Zero Valuation"
+            }
+
+        ret_pct = self.get_unrealized_profit_percentage(customer_id)
+        excess_ret = round(ret_pct - risk_free_rate_pct, 2)
+        beta_info = self.calculate_portfolio_beta_estimate(customer_id)
+        beta = beta_info.get("portfolio_beta", 1.0)
+
+        treynor = round(excess_ret / beta, 2) if beta != 0.0 else 0.0
+
+        if treynor >= 15.0:
+            rating = "High Outperformance"
+        elif treynor >= 8.0:
+            rating = "Strong Market Beating"
+        elif treynor >= 0.0:
+            rating = "Positive Excess Return"
+        else:
+            rating = "Underperforming Risk-Free Hurdle"
+
+        return {
+            "customer_id": customer_id,
+            "total_portfolio_value": round(total_val, 2),
+            "portfolio_return_pct": ret_pct,
+            "risk_free_rate_pct": risk_free_rate_pct,
+            "excess_return_pct": excess_ret,
+            "portfolio_beta": beta,
+            "treynor_ratio": treynor,
+            "treynor_rating": rating
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
