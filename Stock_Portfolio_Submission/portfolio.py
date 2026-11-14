@@ -1537,6 +1537,80 @@ class StockPortfolioManager:
             "sortino_rating": rating
         }
 
+    def simulate_cash_deposit_and_deployment(
+        self,
+        customer_id: str,
+        cash_deposit: float,
+        target_allocations: Dict[str, float]
+    ) -> Dict[str, Any]:
+        """
+        Simulate deploying new liquid capital into target stock allocations without writing to storage.
+
+        Args:
+            customer_id (str): Customer identifier.
+            cash_deposit (float): Positive dollar amount deposited.
+            target_allocations (Dict[str, float]): Dictionary mapping tickers to target deployment percentages.
+
+        Returns:
+            Dict[str, Any]: Simulated deployment plan with target share purchases, remaining cash, and new valuation.
+
+        Raises:
+            InvalidTransactionError: If cash_deposit <= 0 or allocations empty.
+        """
+        if cash_deposit <= 0:
+            raise InvalidTransactionError("Cash deposit amount must be greater than zero.")
+        if not target_allocations:
+            raise InvalidTransactionError("Target deployment allocations cannot be empty.")
+
+        total_weight = sum(target_allocations.values())
+        if total_weight <= 0:
+            raise InvalidTransactionError("Sum of target allocation weights must be greater than zero.")
+
+        consolidated = self.get_consolidated_holdings(customer_id)
+        current_portfolio_val = sum(pos["current_value"] for pos in consolidated.values())
+
+        deployed_actions: List[Dict[str, Any]] = []
+        total_cash_invested = 0.0
+
+        for ticker, raw_weight in target_allocations.items():
+            t_clean = ticker.strip().upper()
+            info = self.validate_ticker(t_clean)
+            if not info:
+                raise InvalidTickerError(f"Ticker '{t_clean}' is not recognized in dataset.")
+
+            normalized_weight = raw_weight / total_weight
+            dollar_budget = round(cash_deposit * normalized_weight, 2)
+            market_price, _ = self.market_service.get_current_price(t_clean)
+
+            shares_to_buy = int(dollar_budget // market_price) if market_price > 0 else 0
+            actual_spent = round(shares_to_buy * market_price, 2)
+            total_cash_invested += actual_spent
+
+            deployed_actions.append({
+                "ticker": t_clean,
+                "company_name": info.get("name", t_clean),
+                "sector": info.get("sector", "General"),
+                "allocated_budget": dollar_budget,
+                "market_price": market_price,
+                "shares_purchasable": shares_to_buy,
+                "actual_cost": actual_spent,
+                "uninvested_dollar_remainder": round(dollar_budget - actual_spent, 2)
+            })
+
+        total_cash_invested = round(total_cash_invested, 2)
+        residual_cash = round(cash_deposit - total_cash_invested, 2)
+        new_projected_value = round(current_portfolio_val + cash_deposit, 2)
+
+        return {
+            "customer_id": customer_id,
+            "cash_deposited": round(cash_deposit, 2),
+            "total_cash_invested": total_cash_invested,
+            "residual_cash_uninvested": residual_cash,
+            "original_portfolio_value": round(current_portfolio_val, 2),
+            "projected_new_portfolio_value": new_projected_value,
+            "deployment_actions": deployed_actions
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
