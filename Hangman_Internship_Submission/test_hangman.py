@@ -22,6 +22,7 @@ from hangman import (
     calculate_vowel_consonant_metrics,
     calculate_letter_frequency_analysis,
     calculate_pattern_similarity,
+    calculate_phonetic_harshness_index,
     calculate_edit_distance,
     check_word_symmetry,
     estimate_syllable_count,
@@ -863,6 +864,34 @@ class TestWordAffixDecomposition(unittest.TestCase):
         game = HangmanGame(secret_word="discontented")
         self.assertEqual(game.affix_analysis["prefix"], "dis")
         self.assertIn("content", game.root_stem)
+
+
+class TestPhoneticHarshnessIndex(unittest.TestCase):
+    """Tests phonetic harshness and guttural friction scoring."""
+
+    def test_melodic_word(self):
+        """Verify vowel-and-liquid rich words score as melodic."""
+        res = calculate_phonetic_harshness_index("moon")
+        self.assertEqual(res["harsh_count"], 0)
+        self.assertEqual(res["harshness_ratio"], 0.0)
+        self.assertEqual(res["harshness_classification"], "Melodic / Soft")
+
+    def test_harsh_plosive_word(self):
+        """Verify plosive and guttural heavy words score as harsh."""
+        res = calculate_phonetic_harshness_index("backdrop")  # b, c, k, d, p are harsh
+        self.assertGreaterEqual(res["harshness_ratio"], 0.50)
+        self.assertEqual(res["harshness_classification"], "Harsh / Guttural")
+
+    def test_invalid_input(self):
+        """Verify empty and non-alphabetic inputs return neutral defaults."""
+        res = calculate_phonetic_harshness_index("")
+        self.assertEqual(res["harshness_classification"], "Neutral")
+
+    def test_game_harshness_property(self):
+        """Verify HangmanGame exposes phonetic_harshness property."""
+        game = HangmanGame(secret_word="kickboxing")
+        self.assertIn("harshness_ratio", game.phonetic_harshness)
+        self.assertGreater(game.phonetic_harshness["harsh_count"], 0)
 
 
 if __name__ == "__main__":
