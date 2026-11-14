@@ -88,6 +88,18 @@ class TestLauncherConfiguration(unittest.TestCase):
             self.assertIn("codebase_audit", data)
             self.assertEqual(data["codebase_audit"]["python_files_count"], 6)
 
+    def test_print_capability_matrix(self):
+        """Verify capability matrix returns dictionary with task metadata."""
+        from run_project import print_capability_matrix
+        matrix = print_capability_matrix()
+        self.assertIsInstance(matrix, dict)
+        self.assertIn("task1", matrix)
+        self.assertIn("task2", matrix)
+        self.assertTrue(matrix["task1"]["offline_ready"])
+        self.assertTrue(matrix["task2"]["offline_ready"])
+        self.assertGreater(len(matrix["task1"]["key_algorithms"]), 0)
+        self.assertGreater(len(matrix["task2"]["key_algorithms"]), 0)
+
 
 if __name__ == "__main__":
     unittest.main()

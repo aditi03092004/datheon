@@ -288,6 +288,8 @@ def print_capability_matrix() -> dict:
         }
     }
 
+    t1_tests = f"{matrix['task1']['tests_passing']} Tests Passing"
+    t2_tests = f"{matrix['task2']['tests_passing']} Tests Passing"
     print("=" * 70)
     print("           DATHEON INTERNSHIP TASK CAPABILITY MATRIX           ")
     print("=" * 70)
@@ -295,7 +297,7 @@ def print_capability_matrix() -> dict:
     print("-" * 70)
     print(f" {'Architecture':<20} | {'Decoupled State Machine':<22} | {'Financial Ledger/Risk':<22}")
     print(f" {'Data Ingestion':<20} | {'2,492 English Words':<22} | {'503 S&P 500 Companies':<22}")
-    print(f" {'Automated Tests':<20} | {f'{matrix[\"task1\"][\"tests_passing\"]} Tests Passing':<22} | {f'{matrix[\"task2\"][\"tests_passing\"]} Tests Passing':<22}")
+    print(f" {'Automated Tests':<20} | {t1_tests:<22} | {t2_tests:<22}")
     print(f" {'Offline Resilience':<20} | {'100% Stdlib':<22} | {'Live + Stdlib Fallback':<22}")
     print(f" {'Core Analytics':<20} | {'Entropy, Affix, Fuzzy':<22} | {'Sharpe, Beta, Sortino':<22}")
     print("=" * 70)
