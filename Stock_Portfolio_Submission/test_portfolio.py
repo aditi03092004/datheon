@@ -669,6 +669,26 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertGreaterEqual(sim["cash_liberated_percentage"], 99.0)  # Only 1 holding = 100%
         self.assertEqual(sim["residual_portfolio_value"], 0.0)
 
+    def test_treynor_ratio_estimation(self):
+        """Verify Treynor ratio calculation, market beta integration, and rating labels."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty customer
+        empty_treynor = self.manager.calculate_treynor_ratio_estimate(cid)
+        self.assertEqual(empty_treynor["treynor_ratio"], 0.0)
+        self.assertEqual(empty_treynor["treynor_rating"], "Uninvested")
+
+        # 2. Add position and test with low hurdle
+        self.manager.record_transaction(cid, "AAPL", 100.0, 5)
+        pos_treynor = self.manager.calculate_treynor_ratio_estimate(cid, risk_free_rate_pct=-10.0)
+        self.assertGreater(pos_treynor["excess_return_pct"], 0.0)
+        self.assertGreater(pos_treynor["treynor_ratio"], 0.0)
+        self.assertIn("portfolio_beta", pos_treynor)
+
+        # 3. High hurdle
+        neg_treynor = self.manager.calculate_treynor_ratio_estimate(cid, risk_free_rate_pct=50.0)
+        self.assertLess(neg_treynor["excess_return_pct"], 0.0)
+        self.assertEqual(neg_treynor["treynor_rating"], "Underperforming Risk-Free Hurdle")
+
 
 if __name__ == "__main__":
     unittest.main()
