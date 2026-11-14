@@ -581,6 +581,69 @@ def find_closest_dictionary_words(
     return results[:top_k]
 
 
+COMMON_PREFIXES = (
+    "anti", "counter", "dis", "extra", "hyper", "inter", "intro", "micro",
+    "mis", "multi", "non", "over", "post", "pre", "pseudo", "re",
+    "semi", "sub", "super", "trans", "ultra", "under", "un"
+)
+
+COMMON_SUFFIXES = (
+    "ability", "action", "ational", "ization", "ically", "acious",
+    "ation", "ition", "ology", "phone", "scope",
+    "able", "ible", "ment", "ness", "ship", "sion", "tion",
+    "ance", "ence", "ward", "wise", "less", "like", "most",
+    "ful", "ous", "ive", "est", "ing", "ity", "ant", "ent",
+    "ish", "ism", "ist", "ize", "ate", "ed", "er", "ly", "ic", "al", "en"
+)
+
+
+def analyze_word_affixes(word: str) -> dict[str, Any]:
+    """
+    Deconstruct an English word into recognized morphological prefix, suffix, and root stem.
+
+    Args:
+        word (str): Input English word.
+
+    Returns:
+        dict[str, Any]: Dictionary containing identified prefix, suffix, root stem, and affix flag.
+    """
+    cleaned = word.strip().lower()
+    if not cleaned or not cleaned.isalpha() or len(cleaned) < 3:
+        return {
+            "word": cleaned,
+            "prefix": None,
+            "suffix": None,
+            "root_stem": cleaned,
+            "has_affixes": False
+        }
+
+    stem = cleaned
+    matched_prefix = None
+    matched_suffix = None
+
+    # Check prefixes (longest match first)
+    for pref in sorted(COMMON_PREFIXES, key=len, reverse=True):
+        if stem.startswith(pref) and len(stem) - len(pref) >= 2:
+            matched_prefix = pref
+            stem = stem[len(pref):]
+            break
+
+    # Check suffixes (longest match first)
+    for suff in sorted(COMMON_SUFFIXES, key=len, reverse=True):
+        if stem.endswith(suff) and len(stem) - len(suff) >= 2:
+            matched_suffix = suff
+            stem = stem[:-len(suff)]
+            break
+
+    return {
+        "word": cleaned,
+        "prefix": matched_prefix,
+        "suffix": matched_suffix,
+        "root_stem": stem,
+        "has_affixes": bool(matched_prefix or matched_suffix)
+    }
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -733,6 +796,16 @@ class HangmanGame:
     def symmetry_metrics(self) -> dict[str, Any]:
         """Returns morphological symmetry analysis for the secret target word."""
         return check_word_symmetry(self.secret_word)
+
+    @property
+    def affix_analysis(self) -> dict[str, Any]:
+        """Returns morphological affix decomposition analysis for secret word."""
+        return analyze_word_affixes(self.secret_word)
+
+    @property
+    def root_stem(self) -> str:
+        """Returns the identified root stem after removing common prefixes and suffixes."""
+        return self.affix_analysis["root_stem"]
 
     def get_masked_word(self, placeholder: str = "_") -> str:
         """
