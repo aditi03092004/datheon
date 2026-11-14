@@ -509,6 +509,78 @@ def check_word_symmetry(word: str) -> dict[str, Any]:
     }
 
 
+def calculate_edit_distance(word1: str, word2: str) -> int:
+    """
+    Calculate the Levenshtein edit distance between two strings using dynamic programming.
+
+    Args:
+        word1 (str): First input word.
+        word2 (str): Second input word.
+
+    Returns:
+        int: Minimum number of single-character edits (insertions, deletions, substitutions).
+    """
+    s1, s2 = word1.strip().lower(), word2.strip().lower()
+    if s1 == s2:
+        return 0
+    if not s1:
+        return len(s2)
+    if not s2:
+        return len(s1)
+
+    m, n = len(s1), len(s2)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]
+
+    for i in range(m + 1):
+        dp[i][0] = i
+    for j in range(n + 1):
+        dp[0][j] = j
+
+    for i in range(1, m + 1):
+        for j in range(1, n + 1):
+            if s1[i - 1] == s2[j - 1]:
+                dp[i][j] = dp[i - 1][j - 1]
+            else:
+                dp[i][j] = 1 + min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1])
+
+    return dp[m][n]
+
+
+def find_closest_dictionary_words(
+    word: str,
+    word_pool: list[str],
+    max_distance: int = 2,
+    top_k: int = 5
+) -> list[tuple[str, int]]:
+    """
+    Find closest dictionary candidates to a given word within a maximum edit distance threshold.
+
+    Args:
+        word (str): Target query word.
+        word_pool (list[str]): Candidate dictionary word list.
+        max_distance (int): Maximum allowable edit distance (default: 2).
+        top_k (int): Maximum number of results to return (default: 5).
+
+    Returns:
+        list[tuple[str, int]]: Ranked list of (candidate_word, distance) tuples.
+    """
+    cleaned = word.strip().lower()
+    if not cleaned or not word_pool:
+        return []
+
+    results: list[tuple[str, int]] = []
+    for cand in word_pool:
+        c_clean = cand.strip().lower()
+        if not c_clean or c_clean == cleaned:
+            continue
+        dist = calculate_edit_distance(cleaned, c_clean)
+        if dist <= max_distance:
+            results.append((c_clean, dist))
+
+    results.sort(key=lambda item: (item[1], item[0]))
+    return results[:top_k]
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -673,6 +745,15 @@ class HangmanGame:
     def get_pattern_similarity(self, candidate_word: str) -> float:
         """Returns pattern similarity score between current game state and a candidate word."""
         return calculate_pattern_similarity(self.get_masked_word(), candidate_word)
+
+    def find_closest_matches(
+        self,
+        word_pool: list[str],
+        max_distance: int = 2,
+        top_k: int = 5
+    ) -> list[tuple[str, int]]:
+        """Returns closest dictionary words to secret word by Levenshtein edit distance."""
+        return find_closest_dictionary_words(self.secret_word, word_pool, max_distance, top_k)
 
     def get_sorted_guessed_letters(self) -> list[str]:
         """Returns a sorted list of all unique letters guessed so far."""
