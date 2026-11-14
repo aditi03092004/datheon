@@ -17,6 +17,7 @@ from hangman import (
     GuessResult,
     HangmanGame,
     HANGMAN_STAGES,
+    analyze_word_affixes,
     calculate_word_complexity,
     calculate_vowel_consonant_metrics,
     calculate_letter_frequency_analysis,
@@ -822,6 +823,46 @@ class TestEditDistanceAndFuzzyMatching(unittest.TestCase):
         matches = game.find_closest_matches(pool, max_distance=1, top_k=3)
         self.assertGreaterEqual(len(matches), 1)
         self.assertIn("clay", [w for w, d in matches])
+
+
+class TestWordAffixDecomposition(unittest.TestCase):
+    """Tests morphological prefix and suffix decomposition."""
+
+    def test_prefix_detection(self):
+        """Verify prefix stripping and root stem extraction."""
+        res = analyze_word_affixes("preview")
+        self.assertEqual(res["prefix"], "pre")
+        self.assertEqual(res["root_stem"], "view")
+        self.assertTrue(res["has_affixes"])
+
+    def test_suffix_detection(self):
+        """Verify suffix stripping and root stem extraction."""
+        res = analyze_word_affixes("player")
+        self.assertEqual(res["suffix"], "er")
+        self.assertEqual(res["root_stem"], "play")
+        self.assertTrue(res["has_affixes"])
+
+    def test_combined_prefix_suffix(self):
+        """Verify decomposition when both prefix and suffix are present."""
+        res = analyze_word_affixes("replaying")
+        self.assertEqual(res["prefix"], "re")
+        self.assertEqual(res["suffix"], "ing")
+        self.assertEqual(res["root_stem"], "play")
+        self.assertTrue(res["has_affixes"])
+
+    def test_no_affixes(self):
+        """Verify words without affixes preserve original word as root stem."""
+        res = analyze_word_affixes("cat")
+        self.assertIsNone(res["prefix"])
+        self.assertIsNone(res["suffix"])
+        self.assertEqual(res["root_stem"], "cat")
+        self.assertFalse(res["has_affixes"])
+
+    def test_game_affix_properties(self):
+        """Verify HangmanGame exposes affix_analysis and root_stem."""
+        game = HangmanGame(secret_word="discontented")
+        self.assertEqual(game.affix_analysis["prefix"], "dis")
+        self.assertIn("content", game.root_stem)
 
 
 if __name__ == "__main__":
