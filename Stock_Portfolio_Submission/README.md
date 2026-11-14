@@ -20,7 +20,7 @@ The system empowers users to record stock purchases and sales, validate tickers 
 Stock_Portfolio_Submission/
 │
 ├── portfolio.py               # Main application: StockPortfolioManager, CLI interface, and ASCII tables
-├── test_portfolio.py          # Automated test suite (Python unittest standard library - 32 tests)
+├── test_portfolio.py          # Automated test suite (Python unittest standard library - 35 tests)
 ├── company_dataset.csv        # S&P 500 company ticker and metadata repository (503 companies)
 ├── details.txt                # Customer ID persistent registry
 ├── portfolio_summary.csv      # Transaction and portfolio history ledger
@@ -79,7 +79,7 @@ $$\text{Herfindahl-Hirschman Index (HHI)} = \sum (\text{Sector Percentage Weight
 
 ## 5. How to Run the Automated Test Suite
 
-The project includes 32 comprehensive unit and integration tests covering dataset ingestion, ID uniqueness, calculation arithmetic, multi-customer portfolio isolation, sales, consolidated holdings, and risk profiling.
+The project includes 35 comprehensive unit and integration tests covering dataset ingestion, ID uniqueness, calculation arithmetic, multi-customer portfolio isolation, sales, consolidated holdings, and risk profiling.
 
 To run the automated tests:
 
@@ -102,6 +102,9 @@ The `StockPortfolioManager` includes position ranking analytics for rapid portfo
 - **`get_customer_financial_scorecard(customer_id)`**: Generates an all-in-one financial dashboard including active position counts, total invested capital, total valuation, unrealized P/L, position win ratio, top holding ticker, and risk classification.
 - **`get_position_risk_alerts(customer_id, stop_loss_pct, take_profit_pct)`**: Scans holdings against customizable risk bounds, flagging positions requiring stop-loss protection or profit realization.
 ### Advanced Risk Analytics & Liquidation Simulation
+- **`calculate_treynor_ratio_estimate(customer_id, risk_free_rate_pct)`**: Calculates excess return per unit of systematic risk ($\beta$).
+- **`calculate_sortino_ratio_estimate(customer_id, target_return_pct)`**: Measures excess return penalized exclusively by downside volatility deviation.
+- **`simulate_cash_deposit_and_deployment(customer_id, cash_deposit, target_allocations)`**: Simulates deployment of new liquid funds into target allocations with share quantity estimation and residual cash accounting.
 - **`calculate_sharpe_ratio_estimate(customer_id, risk_free_rate_pct)`**: Estimates annualized Sharpe ratio and risk-adjusted excess returns using sector concentration volatility modeling.
 - **`calculate_portfolio_beta_estimate(customer_id)`**: Computes weighted systemic market sensitivity ($\beta$) based on GICS sector benchmarks.
 - **`simulate_position_liquidation(customer_id, ticker, estimated_tax_rate_pct)`**: Projects gross proceeds, cost basis, estimated capital gains tax, and post-sale residual portfolio value.
