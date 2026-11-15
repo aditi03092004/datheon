@@ -751,6 +751,36 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertAlmostEqual(div_rep["projected_quarterly_income"], round(div_rep["estimated_annual_dividend"] / 4.0, 2), places=2)
         self.assertAlmostEqual(div_rep["projected_monthly_income"], round(div_rep["estimated_annual_dividend"] / 12.0, 2), places=2)
 
+    def test_simulate_stress_test_scenario(self):
+        """Verify macroeconomic stress test simulations, shock calculations, and resilience ratings."""
+        cid = self.manager.generate_customer_id()
+        # 1. Invalid scenario type
+        with self.assertRaises(ValueError):
+            self.manager.simulate_stress_test_scenario(cid, scenario_type="invalid_scenario_xyz")
+
+        # 2. Empty portfolio
+        empty_stress = self.manager.simulate_stress_test_scenario(cid, scenario_type="broad_market_crash")
+        self.assertEqual(empty_stress["original_portfolio_value"], 0.0)
+        self.assertEqual(empty_stress["dollar_drawdown"], 0.0)
+        self.assertEqual(empty_stress["resilience_rating"], "Uninvested")
+
+        # 3. Add position and simulate broad market crash
+        self.manager.record_transaction(cid, "AAPL", 150.0, 5)
+        crash = self.manager.simulate_stress_test_scenario(cid, scenario_type="broad_market_crash")
+        self.assertGreater(crash["original_portfolio_value"], crash["stressed_portfolio_value"])
+        self.assertGreater(crash["dollar_drawdown"], 0.0)
+        self.assertGreater(crash["drawdown_percentage"], 0.0)
+        self.assertEqual(crash["worst_hit_ticker"], "AAPL")
+        self.assertIn(crash["resilience_rating"], [
+            "High Resilience / Defensive Anchor",
+            "Moderate Resilience / Market Aligned",
+            "Elevated Vulnerability / High Shock Exposure"
+        ])
+
+        # 4. Tech selloff scenario
+        tech_shock = self.manager.simulate_stress_test_scenario(cid, scenario_type="tech_selloff")
+        self.assertEqual(tech_shock["positions"][0]["shock_percentage"], -25.0)
+
 
 if __name__ == "__main__":
     unittest.main()
