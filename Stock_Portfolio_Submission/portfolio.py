@@ -1704,6 +1704,132 @@ class StockPortfolioManager:
             "positions": position_breakdown
         }
 
+    def simulate_stress_test_scenario(
+        self,
+        customer_id: str,
+        scenario_type: str = "broad_market_crash"
+    ) -> Dict[str, Any]:
+        """
+        Simulate macroeconomic shock scenarios and stress test portfolio vulnerability.
+
+        Supported Scenarios:
+        - 'broad_market_crash': 20% baseline decline weighted by individual position beta.
+        - 'tech_selloff': Heavy drawdown in Info Tech (-25%) and Communication Services (-18%).
+        - 'interest_rate_spike': Drawdowns in Real Estate (-20%) and Tech (-14%), gains in Financials (+5%).
+
+        Args:
+            customer_id (str): Customer identifier.
+            scenario_type (str): Key identifying macroeconomic scenario.
+
+        Returns:
+            Dict[str, Any]: Pre/post shock valuation, total dollar drawdown, drop %, and resilience rating.
+
+        Raises:
+            ValueError: If scenario_type is not recognized.
+        """
+        valid_scenarios = ("broad_market_crash", "tech_selloff", "interest_rate_spike")
+        if scenario_type not in valid_scenarios:
+            raise ValueError(f"Unknown scenario_type '{scenario_type}'. Supported: {', '.join(valid_scenarios)}")
+
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return {
+                "customer_id": customer_id,
+                "scenario_type": scenario_type,
+                "original_portfolio_value": 0.0,
+                "stressed_portfolio_value": 0.0,
+                "dollar_drawdown": 0.0,
+                "drawdown_percentage": 0.0,
+                "resilience_rating": "Uninvested",
+                "worst_hit_ticker": None,
+                "positions": []
+            }
+
+        total_orig_val = sum(pos["current_value"] for pos in consolidated.values())
+        if total_orig_val <= 0:
+            return {
+                "customer_id": customer_id,
+                "scenario_type": scenario_type,
+                "original_portfolio_value": 0.0,
+                "stressed_portfolio_value": 0.0,
+                "dollar_drawdown": 0.0,
+                "drawdown_percentage": 0.0,
+                "resilience_rating": "Zero Valuation",
+                "worst_hit_ticker": None,
+                "positions": []
+            }
+
+        stressed_positions: List[Dict[str, Any]] = []
+        total_stressed_val = 0.0
+
+        for ticker, pos in consolidated.items():
+            sector = pos.get("sector", "General")
+            orig_val = pos["current_value"]
+
+            if scenario_type == "broad_market_crash":
+                stock_beta = self.SECTOR_BETA_BENCHMARKS.get(sector, 1.0)
+                shock_pct = -round(min(50.0, max(5.0, 20.0 * stock_beta)), 2)
+            elif scenario_type == "tech_selloff":
+                if sector == "Information Technology":
+                    shock_pct = -25.0
+                elif sector == "Communication Services":
+                    shock_pct = -18.0
+                elif sector == "Consumer Discretionary":
+                    shock_pct = -12.0
+                else:
+                    shock_pct = -4.0
+            elif scenario_type == "interest_rate_spike":
+                if sector == "Real Estate":
+                    shock_pct = -20.0
+                elif sector == "Utilities":
+                    shock_pct = -15.0
+                elif sector == "Information Technology":
+                    shock_pct = -14.0
+                elif sector == "Financials":
+                    shock_pct = 5.0
+                else:
+                    shock_pct = -3.0
+
+            impact_val = orig_val * (shock_pct / 100.0)
+            stressed_val = max(0.0, orig_val + impact_val)
+            dollar_diff = round(orig_val - stressed_val, 2)
+            total_stressed_val += stressed_val
+
+            stressed_positions.append({
+                "ticker": ticker,
+                "company_name": pos["company_name"],
+                "sector": sector,
+                "original_value": orig_val,
+                "shock_percentage": shock_pct,
+                "stressed_value": round(stressed_val, 2),
+                "dollar_impact": dollar_diff
+            })
+
+        stressed_positions.sort(key=lambda p: p["dollar_impact"], reverse=True)
+        total_stressed_val = round(total_stressed_val, 2)
+        total_drawdown = round(total_orig_val - total_stressed_val, 2)
+        drawdown_pct = round((total_drawdown / total_orig_val * 100.0), 2) if total_orig_val > 0 else 0.0
+        worst_hit = stressed_positions[0]["ticker"] if stressed_positions else None
+
+        if drawdown_pct <= 10.0:
+            rating = "High Resilience / Defensive Anchor"
+        elif drawdown_pct <= 20.0:
+            rating = "Moderate Resilience / Market Aligned"
+        else:
+            rating = "Elevated Vulnerability / High Shock Exposure"
+
+        return {
+            "customer_id": customer_id,
+            "scenario_type": scenario_type,
+            "original_portfolio_value": round(total_orig_val, 2),
+            "stressed_portfolio_value": total_stressed_val,
+            "dollar_drawdown": total_drawdown,
+            "drawdown_percentage": drawdown_pct,
+            "resilience_rating": rating,
+            "worst_hit_ticker": worst_hit,
+            "positions": stressed_positions
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
