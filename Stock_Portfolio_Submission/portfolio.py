@@ -1830,6 +1830,112 @@ class StockPortfolioManager:
             "positions": stressed_positions
         }
 
+    def calculate_rebalancing_recommendations(
+        self,
+        customer_id: str,
+        target_sector_weights: Optional[Dict[str, float]] = None
+    ) -> Dict[str, Any]:
+        """
+        Evaluate portfolio sector allocation drift against target weights and compute rebalancing recommendations.
+
+        If target_sector_weights is omitted, an equal-weighted target model across all
+        present portfolio sectors is automatically assumed.
+
+        Args:
+            customer_id (str): Customer identifier.
+            target_sector_weights (Optional[Dict[str, float]]): Optional map of sector name to target weight %.
+
+        Returns:
+            Dict[str, Any]: Drift metrics, compliance status (balanced within +/- 2.0%), and actionable dollar adjustments.
+        """
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "is_balanced": True,
+                "max_drift_pct": 0.0,
+                "sector_actions": []
+            }
+
+        total_val = sum(pos["current_value"] for pos in consolidated.values())
+        if total_val <= 0:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "is_balanced": True,
+                "max_drift_pct": 0.0,
+                "sector_actions": []
+            }
+
+        # Calculate current sector value
+        sector_values: Dict[str, float] = {}
+        for pos in consolidated.values():
+            s = pos.get("sector", "General")
+            sector_values[s] = sector_values.get(s, 0.0) + pos["current_value"]
+
+        held_sectors = list(sector_values.keys())
+
+        # Determine normalized target weights
+        targets: Dict[str, float] = {}
+        if target_sector_weights:
+            sum_raw = sum(target_sector_weights.values())
+            if sum_raw > 0:
+                for s, w in target_sector_weights.items():
+                    targets[s] = round((w / sum_raw) * 100.0, 2)
+            else:
+                eq_w = round(100.0 / len(held_sectors), 2)
+                for s in held_sectors:
+                    targets[s] = eq_w
+        else:
+            eq_w = round(100.0 / len(held_sectors), 2)
+            for s in held_sectors:
+                targets[s] = eq_w
+
+        sector_actions: List[Dict[str, Any]] = []
+        all_eval_sectors = set(held_sectors).union(targets.keys())
+
+        for sector in sorted(all_eval_sectors):
+            curr_val = sector_values.get(sector, 0.0)
+            curr_pct = round((curr_val / total_val) * 100.0, 2)
+            targ_pct = targets.get(sector, 0.0)
+            drift_pct = round(curr_pct - targ_pct, 2)
+
+            targ_val = round(total_val * (targ_pct / 100.0), 2)
+            dollar_diff = round(targ_val - curr_val, 2)
+
+            if drift_pct > 2.0:
+                action = "TRIM / REDUCE"
+                desc = f"Overweight by {drift_pct}%. Trim ${abs(dollar_diff):.2f} to realign."
+            elif drift_pct < -2.0:
+                action = "ADD / EXPAND"
+                desc = f"Underweight by {abs(drift_pct)}%. Invest ${abs(dollar_diff):.2f} to realign."
+            else:
+                action = "ALIGNED"
+                desc = "Allocation is within +/- 2.0% balanced tolerance."
+
+            sector_actions.append({
+                "sector": sector,
+                "current_value": curr_val,
+                "current_weight_pct": curr_pct,
+                "target_weight_pct": targ_pct,
+                "drift_pct": drift_pct,
+                "dollar_adjustment_needed": dollar_diff,
+                "action": action,
+                "description": desc
+            })
+
+        max_drift = max(abs(a["drift_pct"]) for a in sector_actions) if sector_actions else 0.0
+        is_balanced = all(a["action"] == "ALIGNED" for a in sector_actions)
+
+        return {
+            "customer_id": customer_id,
+            "total_portfolio_value": round(total_val, 2),
+            "is_balanced": is_balanced,
+            "max_drift_pct": round(max_drift, 2),
+            "sector_actions": sector_actions
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
