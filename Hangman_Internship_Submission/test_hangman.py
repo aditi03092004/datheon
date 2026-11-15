@@ -23,6 +23,7 @@ from hangman import (
     calculate_letter_frequency_analysis,
     calculate_pattern_similarity,
     calculate_phonetic_harshness_index,
+    calculate_phonotactic_rhythm_score,
     calculate_edit_distance,
     check_word_symmetry,
     estimate_syllable_count,
@@ -892,6 +893,36 @@ class TestPhoneticHarshnessIndex(unittest.TestCase):
         game = HangmanGame(secret_word="kickboxing")
         self.assertIn("harshness_ratio", game.phonetic_harshness)
         self.assertGreater(game.phonetic_harshness["harsh_count"], 0)
+
+
+class TestPhonotacticRhythmAndAlternation(unittest.TestCase):
+    """Tests phonotactic vowel-consonant alternation and syllable rhythm scoring."""
+
+    def test_fluid_alternating_word(self):
+        """Verify alternating consonant-vowel word achieves high alternation ratio."""
+        res = calculate_phonotactic_rhythm_score("banana")
+        self.assertEqual(res["alternation_ratio"], 1.0)
+        self.assertEqual(res["rhythm_classification"], "Fluid Alternating")
+        self.assertEqual(res["longest_consonant_run"], 1)
+
+    def test_cluster_dense_word(self):
+        """Verify consonant cluster heavy word triggers staccato classification."""
+        res = calculate_phonotactic_rhythm_score("strengths")
+        self.assertGreaterEqual(res["longest_consonant_run"], 3)
+        self.assertEqual(res["rhythm_classification"], "Cluster Dense / Staccato")
+
+    def test_invalid_and_single_char(self):
+        """Verify edge cases like empty string and single character inputs."""
+        empty = calculate_phonotactic_rhythm_score("")
+        self.assertEqual(empty["rhythm_classification"], "Indeterminate")
+        single = calculate_phonotactic_rhythm_score("a")
+        self.assertEqual(single["rhythm_classification"], "Monosyllabic Core")
+
+    def test_game_rhythm_integration(self):
+        """Verify HangmanGame exposes rhythm_metrics and alternation_ratio properties."""
+        game = HangmanGame(secret_word="camera")
+        self.assertEqual(game.alternation_ratio, 1.0)
+        self.assertEqual(game.rhythm_metrics["rhythm_classification"], "Fluid Alternating")
 
 
 if __name__ == "__main__":
