@@ -100,6 +100,18 @@ class TestLauncherConfiguration(unittest.TestCase):
         self.assertGreater(len(matrix["task1"]["key_algorithms"]), 0)
         self.assertGreater(len(matrix["task2"]["key_algorithms"]), 0)
 
+    def test_run_preflight_validation(self):
+        """Verify preflight validation audits datasets, headers, and file integrity."""
+        from run_project import run_preflight_validation
+        rep = run_preflight_validation()
+        self.assertIsInstance(rep, dict)
+        self.assertEqual(rep["status"], "HEALTHY")
+        self.assertTrue(rep["task1_dictionary_valid"])
+        self.assertGreater(rep["task1_word_count"], 0)
+        self.assertTrue(rep["task2_dataset_valid"])
+        self.assertTrue(rep["task2_has_required_headers"])
+        self.assertGreater(rep["task2_company_count"], 0)
+
 
 if __name__ == "__main__":
     unittest.main()
