@@ -731,6 +731,26 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertGreaterEqual(plan["residual_cash_uninvested"], 0.0)
         self.assertEqual(len(plan["deployment_actions"]), 2)
 
+    def test_estimate_portfolio_dividend_income(self):
+        """Verify portfolio dividend income estimation, yield percentage, and periodic projections."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty portfolio
+        empty_div = self.manager.estimate_portfolio_dividend_income(cid)
+        self.assertEqual(empty_div["total_portfolio_value"], 0.0)
+        self.assertEqual(empty_div["estimated_annual_dividend"], 0.0)
+        self.assertEqual(empty_div["effective_dividend_yield_pct"], 0.0)
+        self.assertIsNone(empty_div["top_dividend_contributor"])
+
+        # 2. Add positions: AAPL (Info Tech, 0.8%) and O (Real Estate, 3.8%)
+        self.manager.record_transaction(cid, "AAPL", 150.0, 4)
+        div_rep = self.manager.estimate_portfolio_dividend_income(cid)
+        self.assertGreater(div_rep["total_portfolio_value"], 0.0)
+        self.assertGreater(div_rep["estimated_annual_dividend"], 0.0)
+        self.assertGreater(div_rep["effective_dividend_yield_pct"], 0.0)
+        self.assertEqual(div_rep["top_dividend_contributor"], "AAPL")
+        self.assertAlmostEqual(div_rep["projected_quarterly_income"], round(div_rep["estimated_annual_dividend"] / 4.0, 2), places=2)
+        self.assertAlmostEqual(div_rep["projected_monthly_income"], round(div_rep["estimated_annual_dividend"] / 12.0, 2), places=2)
+
 
 if __name__ == "__main__":
     unittest.main()
