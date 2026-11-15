@@ -781,6 +781,34 @@ class TestStockPortfolioTracker(unittest.TestCase):
         tech_shock = self.manager.simulate_stress_test_scenario(cid, scenario_type="tech_selloff")
         self.assertEqual(tech_shock["positions"][0]["shock_percentage"], -25.0)
 
+    def test_calculate_rebalancing_recommendations(self):
+        """Verify target sector rebalancing drift analysis, balance check, and action orders."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty portfolio
+        empty_reb = self.manager.calculate_rebalancing_recommendations(cid)
+        self.assertTrue(empty_reb["is_balanced"])
+        self.assertEqual(empty_reb["max_drift_pct"], 0.0)
+        self.assertEqual(empty_reb["sector_actions"], [])
+
+        # 2. Add positions: AAPL (Info Tech) and JNJ (Health Care)
+        self.manager.record_transaction(cid, "AAPL", 150.0, 10)
+        self.manager.record_transaction(cid, "JNJ", 100.0, 1)
+
+        # Equal-weighted target
+        eq_reb = self.manager.calculate_rebalancing_recommendations(cid)
+        self.assertGreater(eq_reb["total_portfolio_value"], 0.0)
+        self.assertGreater(eq_reb["max_drift_pct"], 2.0)
+        self.assertFalse(eq_reb["is_balanced"])
+        actions = [a["action"] for a in eq_reb["sector_actions"]]
+        self.assertIn("TRIM / REDUCE", actions)
+        self.assertIn("ADD / EXPAND", actions)
+
+        # Custom targets aligned with current weight
+        tech_action = next(a for a in eq_reb["sector_actions"] if a["sector"] == "Information Technology")
+        custom_targets = {"Information Technology": tech_action["current_weight_pct"], "Health Care": 100.0 - tech_action["current_weight_pct"]}
+        aligned_reb = self.manager.calculate_rebalancing_recommendations(cid, target_sector_weights=custom_targets)
+        self.assertTrue(aligned_reb["is_balanced"])
+
 
 if __name__ == "__main__":
     unittest.main()
