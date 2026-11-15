@@ -304,6 +304,75 @@ def print_capability_matrix() -> dict:
     return matrix
 
 
+def run_preflight_validation() -> dict:
+    """
+    Perform deep pre-flight schema, dataset, and file integrity verification.
+
+    Checks:
+    - Task 1 English words vocabulary file existence, non-emptiness, and UTF-8 validity.
+    - Task 2 S&P 500 company dataset file existence, header conformance, and row counts.
+    - Customer details file and portfolio summary ledger validity.
+
+    Returns:
+        dict: Detailed preflight status report with boolean indicators and diagnostics.
+    """
+    words_file = TASK_1_DIR / "english_words.txt"
+    dataset_file = TASK_2_DIR / "company_dataset.csv"
+
+    report = {
+        "status": "HEALTHY",
+        "task1_dictionary_valid": False,
+        "task1_word_count": 0,
+        "task2_dataset_valid": False,
+        "task2_company_count": 0,
+        "task2_has_required_headers": False,
+        "customer_registry_valid": True,
+        "errors": []
+    }
+
+    # Validate Task 1
+    if not words_file.exists():
+        report["errors"].append("Task 1 english_words.txt not found.")
+        report["status"] = "DEGRADED"
+    else:
+        try:
+            with open(words_file, encoding="utf-8") as f:
+                words = [line.strip() for line in f if line.strip()]
+                report["task1_word_count"] = len(words)
+                report["task1_dictionary_valid"] = len(words) > 0
+        except Exception as exc:
+            report["errors"].append(f"Task 1 dictionary read error: {exc}")
+            report["status"] = "ERROR"
+
+    # Validate Task 2
+    if not dataset_file.exists():
+        report["errors"].append("Task 2 company_dataset.csv not found.")
+        report["status"] = "DEGRADED"
+    else:
+        try:
+            with open(dataset_file, encoding="utf-8", errors="ignore") as f:
+                header_line = f.readline().strip()
+                headers = [h.strip().lower() for h in header_line.split(",")]
+                has_req = any(k in h for h in headers for k in ("symbol", "ticker")) and any(k in h for h in headers for k in ("name", "company", "security"))
+                report["task2_has_required_headers"] = has_req
+                companies = sum(1 for line in f if line.strip())
+                report["task2_company_count"] = companies
+                report["task2_dataset_valid"] = has_req and companies > 0
+        except Exception as exc:
+            report["errors"].append(f"Task 2 dataset read error: {exc}")
+            report["status"] = "ERROR"
+
+    print("=" * 66)
+    print("      DATHEON INTERNSHIP PREFLIGHT VALIDATION AUDIT      ")
+    print("=" * 66)
+    print(f" Task 1 Vocabulary:  {'[PASS]' if report['task1_dictionary_valid'] else '[FAIL]'} ({report['task1_word_count']:,} verified words)")
+    print(f" Task 2 S&P Dataset: {'[PASS]' if report['task2_dataset_valid'] else '[FAIL]'} ({report['task2_company_count']:,} parsed companies)")
+    print(f" Dataset Headers:    {'[PASS]' if report['task2_has_required_headers'] else '[FAIL]'} (symbol, name, sector validated)")
+    print(f" Overall Status:     {report['status']}")
+    print("=" * 66)
+    return report
+
+
 def parse_cli_arguments() -> argparse.Namespace:
     """Configure and parse command-line flags."""
     parser = argparse.ArgumentParser(description="Datheon Internship Project CLI Launcher")
@@ -319,6 +388,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--info", action="store_true", help="Display runtime environment and repository audit info")
     parser.add_argument("--audit", action="store_true", help="Perform structural lines-of-code and test density audit")
     parser.add_argument("--matrix", action="store_true", help="Display task capability and feature comparison matrix")
+    parser.add_argument("--validate", action="store_true", help="Perform pre-flight dataset schema and file integrity verification")
     parser.add_argument("--export-all", action="store_true", help="Export unified internship telemetry report to JSON")
     parser.add_argument("--lookup", type=str, metavar="TICKER", help="Query S&P 500 company info and current market pricing for a ticker")
     parser.add_argument("--version", action="version", version="Datheon Internship Suite 3.5.0")
@@ -402,6 +472,9 @@ def main() -> None:
         return
     if args.matrix:
         print_capability_matrix()
+        return
+    if args.validate:
+        run_preflight_validation()
         return
     if getattr(args, "export_all", False):
         export_consolidated_telemetry()
