@@ -11,8 +11,9 @@ import os
 import random
 import sys
 from pathlib import Path
+from collections import Counter
 from enum import Enum
-from typing import Any, Optional
+from typing import Any, Optional, Union
 
 
 class GuessResult(Enum):
@@ -764,6 +765,79 @@ def calculate_phonotactic_rhythm_score(word: str) -> dict[str, Any]:
     }
 
 
+def generate_letter_distribution_histogram(
+    word_or_counts: Union[str, dict[str, int]],
+    max_bar_width: int = 10
+) -> dict[str, Any]:
+    """
+    Generate normalized frequency distribution and ASCII histogram bars for word characters.
+
+    Sorts letters and categorizes them into quartile distribution buckets:
+    - Q4_dominant (>= 75% max frequency)
+    - Q3_frequent (50% - 74% max frequency)
+    - Q2_medium (25% - 49% max frequency)
+    - Q1_rare (< 25% max frequency)
+
+    Returns:
+        dict[str, Any]: total_letters, unique_letters, frequencies, bars, and quartiles.
+    """
+    if isinstance(word_or_counts, str):
+        cleaned = "".join(c.lower() for c in word_or_counts if c.isalpha())
+        freqs = Counter(cleaned)
+    elif isinstance(word_or_counts, dict):
+        freqs = {str(k).lower(): int(v) for k, v in word_or_counts.items() if str(k).isalpha() and v > 0}
+    else:
+        freqs = {}
+
+    if not freqs:
+        return {
+            "total_letters": 0,
+            "unique_letters": 0,
+            "frequencies": {},
+            "bars": {},
+            "quartiles": {
+                "Q1_rare": [],
+                "Q2_medium": [],
+                "Q3_frequent": [],
+                "Q4_dominant": []
+            }
+        }
+
+    total_letters = sum(freqs.values())
+    unique_letters = len(freqs)
+    max_freq = max(freqs.values())
+
+    bars: dict[str, str] = {}
+    quartiles: dict[str, list[str]] = {
+        "Q1_rare": [],
+        "Q2_medium": [],
+        "Q3_frequent": [],
+        "Q4_dominant": []
+    }
+
+    for char, count in sorted(freqs.items()):
+        bar_len = max(1, round((count / max_freq) * max_bar_width))
+        bars[char] = "█" * bar_len
+
+        rel_ratio = count / max_freq
+        if rel_ratio >= 0.75:
+            quartiles["Q4_dominant"].append(char)
+        elif rel_ratio >= 0.50:
+            quartiles["Q3_frequent"].append(char)
+        elif rel_ratio >= 0.25:
+            quartiles["Q2_medium"].append(char)
+        else:
+            quartiles["Q1_rare"].append(char)
+
+    return {
+        "total_letters": total_letters,
+        "unique_letters": unique_letters,
+        "frequencies": dict(sorted(freqs.items())),
+        "bars": bars,
+        "quartiles": quartiles
+    }
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -941,6 +1015,16 @@ class HangmanGame:
     def alternation_ratio(self) -> float:
         """Returns the ratio of phonetic transitions to maximum possible transitions."""
         return self.rhythm_metrics["alternation_ratio"]
+
+    @property
+    def letter_histogram(self) -> dict[str, Any]:
+        """Returns frequency distribution and ASCII bars for characters in secret word."""
+        return generate_letter_distribution_histogram(self.secret_word)
+
+    @property
+    def frequency_quartiles(self) -> dict[str, list[str]]:
+        """Returns categorized letter quartile distribution for the secret word."""
+        return self.letter_histogram["quartiles"]
 
     def get_masked_word(self, placeholder: str = "_") -> str:
         """
