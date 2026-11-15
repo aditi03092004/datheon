@@ -31,6 +31,7 @@ from hangman import (
     find_anagram_candidates,
     find_closest_dictionary_words,
     find_pattern_matches,
+    generate_letter_distribution_histogram,
     load_words,
 )
 
@@ -923,6 +924,49 @@ class TestPhonotacticRhythmAndAlternation(unittest.TestCase):
         game = HangmanGame(secret_word="camera")
         self.assertEqual(game.alternation_ratio, 1.0)
         self.assertEqual(game.rhythm_metrics["rhythm_classification"], "Fluid Alternating")
+
+
+class TestFrequencyDistributionAnalytics(unittest.TestCase):
+    """Tests letter frequency distribution, ASCII bars, and quartile analytics."""
+
+    def test_generate_letter_distribution_histogram_basic(self):
+        """Verify character frequency counts and normalized bars for a word."""
+        res = generate_letter_distribution_histogram("banana", max_bar_width=6)
+        self.assertEqual(res["total_letters"], 6)
+        self.assertEqual(res["unique_letters"], 3)
+        self.assertEqual(res["frequencies"]["a"], 3)
+        self.assertEqual(res["frequencies"]["b"], 1)
+        self.assertEqual(res["frequencies"]["n"], 2)
+        self.assertEqual(res["bars"]["a"], "██████")
+
+    def test_generate_histogram_from_dict(self):
+        """Verify histogram construction directly from dictionary counts."""
+        counts = {"e": 10, "t": 5, "x": 1}
+        res = generate_letter_distribution_histogram(counts, max_bar_width=10)
+        self.assertEqual(res["total_letters"], 16)
+        self.assertIn("e", res["quartiles"]["Q4_dominant"])
+        self.assertIn("x", res["quartiles"]["Q1_rare"])
+
+    def test_quartile_distribution(self):
+        """Verify frequency quartile categorization for dominant vs rare characters."""
+        res = generate_letter_distribution_histogram("mississippi")
+        self.assertIn("i", res["quartiles"]["Q4_dominant"])
+        self.assertIn("s", res["quartiles"]["Q4_dominant"])
+        self.assertIn("m", res["quartiles"]["Q2_medium"])
+
+    def test_invalid_inputs(self):
+        """Verify empty and non-alphabetic inputs yield safe empty distributions."""
+        empty_res = generate_letter_distribution_histogram("")
+        self.assertEqual(empty_res["total_letters"], 0)
+        self.assertEqual(empty_res["frequencies"], {})
+        num_res = generate_letter_distribution_histogram("12345!@#")
+        self.assertEqual(num_res["total_letters"], 0)
+
+    def test_game_histogram_properties(self):
+        """Verify HangmanGame exposes letter_histogram and frequency_quartiles."""
+        game = HangmanGame(secret_word="assessment")
+        self.assertIn("s", game.frequency_quartiles["Q4_dominant"])
+        self.assertEqual(game.letter_histogram["frequencies"]["s"], 4)
 
 
 if __name__ == "__main__":
