@@ -176,7 +176,7 @@ def run_system_info() -> dict:
             companies_count = max(0, sum(1 for line in f if line.strip()) - 1)
 
     info = {
-        "version": "3.5.0",
+        "version": "4.0.0",
         "python_version": sys.version.split()[0],
         "os_platform": platform.platform(),
         "task1_words": words_count,
@@ -274,17 +274,17 @@ def print_capability_matrix() -> dict:
             "name": "Hangman Word Engine",
             "architecture": "Object-Oriented Decoupled State Machine",
             "data_source": "2,492 Curated English Words",
-            "tests_passing": 79,
+            "tests_passing": 88,
             "offline_ready": True,
-            "key_algorithms": ["Shannon Entropy", "Levenshtein Distance", "Affix Decomposition", "Phonetics"]
+            "key_algorithms": ["Rhythm Alternation", "Letter Histograms", "Shannon Entropy", "Affixes"]
         },
         "task2": {
             "name": "Stock Portfolio Tracker",
             "architecture": "Modular Financial Ledger & Analytics Engine",
             "data_source": "503 S&P 500 Stocks Dataset",
-            "tests_passing": 35,
+            "tests_passing": 38,
             "offline_ready": True,
-            "key_algorithms": ["Sharpe/Treynor/Sortino", "HHI Concentration", "VaR Downside", "Cash Deployment"]
+            "key_algorithms": ["Macro Stress Tests", "Sector Rebalancing", "Dividend Yield", "Sortino/Treynor"]
         }
     }
 
@@ -391,7 +391,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--validate", action="store_true", help="Perform pre-flight dataset schema and file integrity verification")
     parser.add_argument("--export-all", action="store_true", help="Export unified internship telemetry report to JSON")
     parser.add_argument("--lookup", type=str, metavar="TICKER", help="Query S&P 500 company info and current market pricing for a ticker")
-    parser.add_argument("--version", action="version", version="Datheon Internship Suite 3.5.0")
+    parser.add_argument("--version", action="version", version="Datheon Internship Suite 4.0.0")
     return parser.parse_args()
 
 

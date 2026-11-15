@@ -1,7 +1,7 @@
 # Datheon Python Programming Internship
 
 ![Python Version](https://img.shields.io/badge/python-3.8%2B-blue.svg)
-![Tests Status](https://img.shields.io/badge/tests-125%20passing-brightgreen.svg)
+![Tests Status](https://img.shields.io/badge/tests-138%20passing-brightgreen.svg)
 ![Internship](https://img.shields.io/badge/Internship-Datheon-orange.svg)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey.svg)
 
@@ -17,7 +17,7 @@ As a B.Tech Computer Science and Engineering student specialising in Cybersecuri
 
 ### Quick Start (Unified Launcher)
 
-You can launch either project or run the complete automated test suite (125 passing tests) directly from the repository root using the unified launcher:
+You can launch either project or run the complete automated test suite (138 passing tests) directly from the repository root using the unified launcher:
 
 ```bash
 python run_project.py
@@ -28,6 +28,7 @@ CLI options:
 - `python run_project.py --info`      : Runtime environment & repository audit
 - `python run_project.py --audit`     : Deep codebase structural lines-of-code audit
 - `python run_project.py --matrix`    : Display task capability and feature comparison matrix
+- `python run_project.py --validate`  : Pre-flight dataset schema & file integrity audit
 - `python run_project.py --export-all`: Export consolidated project telemetry to JSON
 - `python run_project.py --stats`     : High-level metrics and dataset statistics
 - `python run_project.py --summary`   : Consolidated features and metrics snapshot
@@ -75,7 +76,7 @@ A modular Python application designed to record stock purchases and sales, valid
 graph TD
     Launcher[run_project.py CLI Launcher] --> Task1[Task 1: Hangman Game]
     Launcher --> Task2[Task 2: Stock Portfolio Tracker]
-    Launcher --> Tests[Automated Test Suite: 125 Tests]
+    Launcher --> Tests[Automated Test Suite: 138 Tests]
 
     subgraph Task 1 Engine
         Task1 --> HangmanGame[HangmanGame State Machine]
@@ -138,9 +139,9 @@ python run_project.py --doctor
 | **Architecture** | Object-Oriented State Engine | Modular Financial & Market Service | CLI Orchestrator & Diagnostics |
 | **Data Source** | 2,492 Curated English Words | 503 S&P 500 Companies Dataset | Subprocess Runners |
 | **Test Framework** | Python Standard `unittest` | Python Standard `unittest` | Python Standard `unittest` |
-| **Passing Tests** | **79 Passing Unit Tests** | **35 Passing Unit Tests** | **11 Passing Unit Tests** |
-| **Total Test Count** | \multicolumn{3}{c|}{**125 Passing Unit Tests Across All Suites**} |
-| **Key Features** | Entropy, Symmetry, Gallows Stages, Phonetics | Sharpe Ratio, Beta, Liquidation, Sizing, HHI | `--doctor`, `--info`, `--audit`, `--matrix`, `--export-all` |
+| **Passing Tests** | **88 Passing Unit Tests** | **38 Passing Unit Tests** | **12 Passing Unit Tests** |
+| **Total Test Count** | \multicolumn{3}{c|}{**138 Passing Unit Tests Across All Suites**} |
+| **Key Features** | Rhythm Alternation, Histograms, Affixes, Entropy | Macro Stress Tests, Sector Rebalancing, Dividend Yield | `--doctor`, `--info`, `--audit`, `--matrix`, `--validate` |
 | **Offline Ready** | 100% Standard Library | 100% Standard Library Fallback | 100% Standard Library |
 
 ## Connect With Me

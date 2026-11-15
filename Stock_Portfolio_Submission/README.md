@@ -79,7 +79,7 @@ $$\text{Herfindahl-Hirschman Index (HHI)} = \sum (\text{Sector Percentage Weight
 
 ## 5. How to Run the Automated Test Suite
 
-The project includes 35 comprehensive unit and integration tests covering dataset ingestion, ID uniqueness, calculation arithmetic, multi-customer portfolio isolation, sales, consolidated holdings, and risk profiling.
+The project includes 38 comprehensive unit and integration tests covering dataset ingestion, ID uniqueness, calculation arithmetic, multi-customer portfolio isolation, sales, consolidated holdings, and risk profiling.
 
 To run the automated tests:
 
@@ -102,6 +102,9 @@ The `StockPortfolioManager` includes position ranking analytics for rapid portfo
 - **`get_customer_financial_scorecard(customer_id)`**: Generates an all-in-one financial dashboard including active position counts, total invested capital, total valuation, unrealized P/L, position win ratio, top holding ticker, and risk classification.
 - **`get_position_risk_alerts(customer_id, stop_loss_pct, take_profit_pct)`**: Scans holdings against customizable risk bounds, flagging positions requiring stop-loss protection or profit realization.
 ### Advanced Risk Analytics & Liquidation Simulation
+- **`estimate_portfolio_dividend_income(customer_id)`**: Projects annual dividend cash flow, effective portfolio dividend yield %, and quarterly/monthly payouts based on S&P 500 sector benchmarks.
+- **`simulate_stress_test_scenario(customer_id, scenario_type)`**: Simulates macroeconomic shocks (`broad_market_crash`, `tech_selloff`, `interest_rate_spike`), measuring drawdowns and resilience ratings.
+- **`calculate_rebalancing_recommendations(customer_id, target_sector_weights)`**: Measures sector allocation drift against user targets (or equal-weight benchmark) and calculates exact dollar adjustment orders.
 - **`calculate_treynor_ratio_estimate(customer_id, risk_free_rate_pct)`**: Calculates excess return per unit of systematic risk ($\beta$).
 - **`calculate_sortino_ratio_estimate(customer_id, target_return_pct)`**: Measures excess return penalized exclusively by downside volatility deviation.
 - **`simulate_cash_deposit_and_deployment(customer_id, cash_deposit, target_allocations)`**: Simulates deployment of new liquid funds into target allocations with share quantity estimation and residual cash accounting.
