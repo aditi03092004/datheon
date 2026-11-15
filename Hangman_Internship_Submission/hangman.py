@@ -686,6 +686,84 @@ def calculate_phonetic_harshness_index(word: str) -> dict[str, Any]:
     }
 
 
+def calculate_phonotactic_rhythm_score(word: str) -> dict[str, Any]:
+    """
+    Evaluate phonotactic alternation between vowels and consonants across an English word.
+
+    Alternating patterns (e.g. C-V-C-V) indicate rhythmic flow, whereas consecutive
+    clusters (e.g. C-C-C) increase orthographic and pronunciation resistance.
+
+    Returns:
+        dict[str, Any]: transitions, alternation_ratio, longest_consonant_run,
+                        longest_vowel_run, and rhythm_classification.
+    """
+    cleaned = word.strip().lower()
+    if not cleaned or not cleaned.isalpha():
+        return {
+            "word": cleaned,
+            "transitions": 0,
+            "alternation_ratio": 0.0,
+            "longest_consonant_run": 0,
+            "longest_vowel_run": 0,
+            "rhythm_classification": "Indeterminate"
+        }
+
+    vowels = set("aeiou")
+    if len(cleaned) == 1:
+        is_v = cleaned in vowels
+        return {
+            "word": cleaned,
+            "transitions": 0,
+            "alternation_ratio": 1.0,
+            "longest_consonant_run": 0 if is_v else 1,
+            "longest_vowel_run": 1 if is_v else 0,
+            "rhythm_classification": "Monosyllabic Core"
+        }
+
+    transitions = 0
+    max_c_run = 0
+    curr_c_run = 0
+    max_v_run = 0
+    curr_v_run = 0
+
+    for i, ch in enumerate(cleaned):
+        is_v = ch in vowels
+        if is_v:
+            curr_v_run += 1
+            if curr_v_run > max_v_run:
+                max_v_run = curr_v_run
+            curr_c_run = 0
+        else:
+            curr_c_run += 1
+            if curr_c_run > max_c_run:
+                max_c_run = curr_c_run
+            curr_v_run = 0
+
+        if i > 0:
+            prev_is_v = cleaned[i - 1] in vowels
+            if is_v != prev_is_v:
+                transitions += 1
+
+    max_possible = max(1, len(cleaned) - 1)
+    ratio = round(transitions / max_possible, 2)
+
+    if ratio >= 0.70:
+        classification = "Fluid Alternating"
+    elif ratio <= 0.35 or max_c_run >= 3:
+        classification = "Cluster Dense / Staccato"
+    else:
+        classification = "Balanced Flow"
+
+    return {
+        "word": cleaned,
+        "transitions": transitions,
+        "alternation_ratio": ratio,
+        "longest_consonant_run": max_c_run,
+        "longest_vowel_run": max_v_run,
+        "rhythm_classification": classification
+    }
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -853,6 +931,16 @@ class HangmanGame:
     def phonetic_harshness(self) -> dict[str, Any]:
         """Returns phonetic harshness and auditory texture analysis for secret word."""
         return calculate_phonetic_harshness_index(self.secret_word)
+
+    @property
+    def rhythm_metrics(self) -> dict[str, Any]:
+        """Returns phonotactic alternation and rhythmic cluster metrics for secret word."""
+        return calculate_phonotactic_rhythm_score(self.secret_word)
+
+    @property
+    def alternation_ratio(self) -> float:
+        """Returns the ratio of phonetic transitions to maximum possible transitions."""
+        return self.rhythm_metrics["alternation_ratio"]
 
     def get_masked_word(self, placeholder: str = "_") -> str:
         """
