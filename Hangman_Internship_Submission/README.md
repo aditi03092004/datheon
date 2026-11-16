@@ -85,7 +85,7 @@ Hangman_Internship_Submission/
 
 ## 5. How to Run the Automated Test Suite
 
-The project includes 88 automated unit tests covering word loading, complexity scoring, hint budgeting, validation, state management, duplicates, scoring, and termination.
+The project includes 99 automated unit tests covering word loading, complexity scoring, hint budgeting, validation, state management, duplicates, scoring, and termination.
 
 To run the automated tests:
 
@@ -101,7 +101,9 @@ The `HangmanGame` engine computes real-time linguistic structure metrics for eve
 - **`vowel_ratio`**: Ratio of vowel density (vowels / total length), aiding phonetic difficulty profiling.
 - **`rhythm_metrics`**: Evaluates phonotactic alternation between vowels and consonants, calculating transition ratios, longest consonant runs, and rhythm classifications (`Fluid Alternating`, `Balanced Flow`, `Cluster Dense / Staccato`).
 - **`letter_histogram`**: Generates normalized ASCII frequency bars (`█`) and segments characters into quartile frequency distributions (`Q4_dominant` to `Q1_rare`).
-- **`vowel_ratio`**: Ratio of vowel density (vowels / total length), aiding phonetic difficulty profiling.
+- **`guessability_profile`**: Heuristic model evaluating human difficulty resistance on a 0-100 scale, flagging risk factors such as vowel scarcity or rare consonant density.
+- **`positional_signature`**: Maps structural letter positions, isolating terminal characters, vowel anchors, and consonant bounds.
+- **`recommend_next_guess(word_pool)`**: Evaluates candidate dictionary matches for the active pattern and recommends the optimal next letter maximizing information gain.
 
 ### Letter Frequency Profiling & Display Formatting
 - **`letter_frequencies`**: Returns an exact frequency dictionary of every character in the target word.

@@ -79,7 +79,7 @@ $$\text{Herfindahl-Hirschman Index (HHI)} = \sum (\text{Sector Percentage Weight
 
 ## 5. How to Run the Automated Test Suite
 
-The project includes 38 comprehensive unit and integration tests covering dataset ingestion, ID uniqueness, calculation arithmetic, multi-customer portfolio isolation, sales, consolidated holdings, and risk profiling.
+The project includes 41 comprehensive unit and integration tests covering dataset ingestion, ID uniqueness, calculation arithmetic, multi-customer portfolio isolation, sales, consolidated holdings, and risk profiling.
 
 To run the automated tests:
 
@@ -102,6 +102,9 @@ The `StockPortfolioManager` includes position ranking analytics for rapid portfo
 - **`get_customer_financial_scorecard(customer_id)`**: Generates an all-in-one financial dashboard including active position counts, total invested capital, total valuation, unrealized P/L, position win ratio, top holding ticker, and risk classification.
 - **`get_position_risk_alerts(customer_id, stop_loss_pct, take_profit_pct)`**: Scans holdings against customizable risk bounds, flagging positions requiring stop-loss protection or profit realization.
 ### Advanced Risk Analytics & Liquidation Simulation
+- **`calculate_expected_shortfall_cvar(customer_id, confidence_level, time_horizon_days)`**: Estimates Conditional Value at Risk (CVaR) capturing expected tail losses beyond the VaR threshold.
+- **`calculate_portfolio_diversification_ratio(customer_id)`**: Evaluates Choueifaty Diversification Ratio ($DR$) quantifying cross-sector correlation hedging.
+- **`simulate_dollar_cost_averaging(ticker, monthly_investment, months)`**: Models systematic recurring accumulation schedules under volatility cycles and benchmarks against lump-sum allocation.
 - **`estimate_portfolio_dividend_income(customer_id)`**: Projects annual dividend cash flow, effective portfolio dividend yield %, and quarterly/monthly payouts based on S&P 500 sector benchmarks.
 - **`simulate_stress_test_scenario(customer_id, scenario_type)`**: Simulates macroeconomic shocks (`broad_market_crash`, `tech_selloff`, `interest_rate_spike`), measuring drawdowns and resilience ratings.
 - **`calculate_rebalancing_recommendations(customer_id, target_sector_weights)`**: Measures sector allocation drift against user targets (or equal-weight benchmark) and calculates exact dollar adjustment orders.
