@@ -2017,6 +2017,107 @@ class StockPortfolioManager:
             "tail_risk_rating": rating
         }
 
+    def calculate_portfolio_diversification_ratio(self, customer_id: str) -> Dict[str, Any]:
+        """
+        Calculate the Choueifaty Diversification Ratio (DR) measuring diversification efficiency.
+
+        DR = sum(w_i * sigma_i) / sigma_portfolio
+        A ratio of 1.0 represents zero diversification (perfect correlation), whereas DR > 1.0
+        demonstrates risk reduction via non-correlated asset combinations.
+
+        Returns:
+            Dict[str, Any]: weighted_asset_volatility_pct, portfolio_volatility_pct,
+                            diversification_ratio, and diversification_rating.
+        """
+        import math
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "weighted_asset_volatility_pct": 0.0,
+                "portfolio_volatility_pct": 0.0,
+                "diversification_ratio": 1.0,
+                "diversification_rating": "Uninvested",
+                "sectors_present": []
+            }
+
+        total_val = sum(pos["current_value"] for pos in consolidated.values())
+        if total_val <= 0:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "weighted_asset_volatility_pct": 0.0,
+                "portfolio_volatility_pct": 0.0,
+                "diversification_ratio": 1.0,
+                "diversification_rating": "Zero Valuation",
+                "sectors_present": []
+            }
+
+        sector_vols = {
+            "Information Technology": 24.0,
+            "Energy": 25.0,
+            "Consumer Discretionary": 22.0,
+            "Communication Services": 21.0,
+            "Financials": 20.0,
+            "Industrials": 19.0,
+            "Materials": 19.0,
+            "Real Estate": 18.0,
+            "Health Care": 16.0,
+            "Utilities": 15.0,
+            "Consumer Staples": 14.0
+        }
+
+        # Calculate sector weights
+        sector_weights: Dict[str, float] = {}
+        for pos in consolidated.values():
+            sec = pos.get("sector", "General")
+            sector_weights[sec] = sector_weights.get(sec, 0.0) + (pos["current_value"] / total_val)
+
+        sectors = list(sector_weights.keys())
+        weighted_vol_sum = 0.0
+        for sec, w in sector_weights.items():
+            s_vol = sector_vols.get(sec, 20.0)
+            weighted_vol_sum += w * s_vol
+
+        # Cross-sector correlation matrix modeling
+        portfolio_var = 0.0
+        for i, s1 in enumerate(sectors):
+            w1 = sector_weights[s1]
+            vol1 = sector_vols.get(s1, 20.0)
+            for j, s2 in enumerate(sectors):
+                w2 = sector_weights[s2]
+                vol2 = sector_vols.get(s2, 20.0)
+                if s1 == s2:
+                    rho = 1.0
+                elif ("Technology" in s1 and "Utilities" in s2) or ("Technology" in s2 and "Utilities" in s1):
+                    rho = 0.25
+                elif ("Technology" in s1 and "Communication" in s2) or ("Technology" in s2 and "Communication" in s1):
+                    rho = 0.78
+                else:
+                    rho = 0.55
+                portfolio_var += w1 * w2 * vol1 * vol2 * rho
+
+        portfolio_vol = math.sqrt(max(0.01, portfolio_var))
+        dr = round(weighted_vol_sum / portfolio_vol, 2) if portfolio_vol > 0 else 1.0
+
+        if dr >= 1.25:
+            rating = "Highly Diversified / Optimal Cross-Sector Hedge"
+        elif dr >= 1.08:
+            rating = "Moderately Diversified / Balanced Allocation"
+        else:
+            rating = "Concentrated / Low Diversification Benefit"
+
+        return {
+            "customer_id": customer_id,
+            "total_portfolio_value": round(total_val, 2),
+            "weighted_asset_volatility_pct": round(weighted_vol_sum, 2),
+            "portfolio_volatility_pct": round(portfolio_vol, 2),
+            "diversification_ratio": dr,
+            "diversification_rating": rating,
+            "sectors_present": sectors
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
