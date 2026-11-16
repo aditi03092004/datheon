@@ -922,6 +922,78 @@ def predict_word_guessability_score(word: str) -> dict[str, Any]:
     }
 
 
+def analyze_word_positional_signature(word: str) -> dict[str, Any]:
+    """
+    Map structural letter positions, isolating terminal characters, vowel anchors, and consonant bounds.
+
+    Returns:
+        dict[str, Any]: word, length, first_letter, last_letter, vowel_positions, consonant_positions.
+    """
+    cleaned = word.strip().lower()
+    if not cleaned or not cleaned.isalpha():
+        return {
+            "word": cleaned,
+            "length": 0,
+            "first_letter": None,
+            "last_letter": None,
+            "vowel_positions": [],
+            "consonant_positions": []
+        }
+
+    vowels = set("aeiou")
+    v_pos = [i for i, c in enumerate(cleaned) if c in vowels]
+    c_pos = [i for i, c in enumerate(cleaned) if c not in vowels]
+
+    return {
+        "word": cleaned,
+        "length": len(cleaned),
+        "first_letter": cleaned[0],
+        "last_letter": cleaned[-1],
+        "vowel_positions": v_pos,
+        "consonant_positions": c_pos
+    }
+
+
+def calculate_positional_letter_distribution(
+    word_pool: list[str],
+    target_length: Optional[int] = None
+) -> dict[str, Any]:
+    """
+    Analyze letter frequency across positions (first, last, and overall) for dictionary words.
+
+    Returns:
+        dict[str, Any]: total_words, first_letter_counts, last_letter_counts, top_opening_guesses.
+    """
+    pool = [w.strip().lower() for w in word_pool if w.strip().isalpha()]
+    if target_length is not None and target_length > 0:
+        pool = [w for w in pool if len(w) == target_length]
+
+    if not pool:
+        return {
+            "total_words": 0,
+            "first_letter_counts": {},
+            "last_letter_counts": {},
+            "top_opening_guesses": []
+        }
+
+    first_counts: dict[str, int] = Counter(w[0] for w in pool)
+    last_counts: dict[str, int] = Counter(w[-1] for w in pool)
+    word_presence: dict[str, int] = Counter()
+
+    for w in pool:
+        for char in set(w):
+            word_presence[char] += 1
+
+    top_openers = [char for char, _ in word_presence.most_common(5)]
+
+    return {
+        "total_words": len(pool),
+        "first_letter_counts": dict(sorted(first_counts.items())),
+        "last_letter_counts": dict(sorted(last_counts.items())),
+        "top_opening_guesses": top_openers
+    }
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -1119,6 +1191,11 @@ class HangmanGame:
     def guessability_score(self) -> float:
         """Returns the normalized human guessability score (0.0 - 100.0) of secret word."""
         return self.guessability_profile["guessability_score"]
+
+    @property
+    def positional_signature(self) -> dict[str, Any]:
+        """Returns positional map of letters, vowels, and consonants in secret word."""
+        return analyze_word_positional_signature(self.secret_word)
 
     def get_masked_word(self, placeholder: str = "_") -> str:
         """
