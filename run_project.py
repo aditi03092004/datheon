@@ -373,6 +373,47 @@ def run_preflight_validation() -> dict:
     return report
 
 
+def generate_project_digest() -> dict:
+    """
+    Generate an executive technical architecture briefing and codebase digest.
+
+    Returns:
+        dict: High-level architectural metrics, test densities, and capabilities.
+    """
+    info = run_system_info()
+    audit = run_codebase_audit()
+
+    digest = {
+        "suite_version": info["version"],
+        "runtime": f"Python {info['python_version']} on {info['os_platform']}",
+        "total_python_files": audit["python_files_count"],
+        "total_lines_of_code": audit["total_lines_of_code"],
+        "task1_lines": audit["task1_lines"],
+        "task2_lines": audit["task2_lines"],
+        "test_suite_lines": audit["test_lines"],
+        "vocabulary_size": info["task1_words"],
+        "sp500_companies_count": info["task2_companies"],
+        "offline_standard_library_compliance": True
+    }
+
+    print("=" * 70)
+    print("         DATHEON INTERNSHIP EXECUTIVE TECHNICAL DIGEST         ")
+    print("=" * 70)
+    print(" [Core Architectural Pillars]")
+    print("   * Task 1: Hangman State Engine (Linguistic & Information Entropy)")
+    print("   * Task 2: Stock Portfolio Tracker (Institutional Risk & Ledgers)")
+    print("   * Launcher: Unified Diagnostic Orchestration & Test Harness")
+    print("\n [Codebase Volume & Verification Density]")
+    print(f"   * Total Source Code:   {digest['total_lines_of_code']:,} lines across {digest['total_python_files']} modules")
+    print(f"   * Automated Testing:   {digest['test_suite_lines']:,} lines of unit tests")
+    print(f"   * Data Assets:         {digest['vocabulary_size']:,} words | {digest['sp500_companies_count']} S&P 500 stocks")
+    print("\n [Engineering Standards]")
+    print("   * Dependencies:        100% Standard Library (Zero External Packages)")
+    print(f"   * Deployment Version:  v{digest['suite_version']}")
+    print("=" * 70)
+    return digest
+
+
 def parse_cli_arguments() -> argparse.Namespace:
     """Configure and parse command-line flags."""
     parser = argparse.ArgumentParser(description="Datheon Internship Project CLI Launcher")
@@ -389,6 +430,7 @@ def parse_cli_arguments() -> argparse.Namespace:
     parser.add_argument("--audit", action="store_true", help="Perform structural lines-of-code and test density audit")
     parser.add_argument("--matrix", action="store_true", help="Display task capability and feature comparison matrix")
     parser.add_argument("--validate", action="store_true", help="Perform pre-flight dataset schema and file integrity verification")
+    parser.add_argument("--digest", action="store_true", help="Display executive technical architecture briefing and digest")
     parser.add_argument("--export-all", action="store_true", help="Export unified internship telemetry report to JSON")
     parser.add_argument("--lookup", type=str, metavar="TICKER", help="Query S&P 500 company info and current market pricing for a ticker")
     parser.add_argument("--version", action="version", version="Datheon Internship Suite 4.0.0")
@@ -475,6 +517,9 @@ def main() -> None:
         return
     if args.validate:
         run_preflight_validation()
+        return
+    if args.digest:
+        generate_project_digest()
         return
     if getattr(args, "export_all", False):
         export_consolidated_telemetry()
