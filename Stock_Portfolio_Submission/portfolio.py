@@ -1936,6 +1936,87 @@ class StockPortfolioManager:
             "sector_actions": sector_actions
         }
 
+    def calculate_expected_shortfall_cvar(
+        self,
+        customer_id: str,
+        confidence_level: float = 0.95,
+        time_horizon_days: int = 1
+    ) -> Dict[str, Any]:
+        """
+        Estimate Conditional Value at Risk (CVaR / Expected Shortfall) measuring average tail loss beyond VaR.
+
+        Args:
+            customer_id (str): Customer identifier.
+            confidence_level (float): Confidence threshold (default: 0.95).
+            time_horizon_days (int): Forecast horizon in trading days (default: 1).
+
+        Returns:
+            Dict[str, Any]: VaR dollar loss, Expected Shortfall CVaR, CVaR %, and tail risk rating.
+        """
+        import math
+        consolidated = self.get_consolidated_holdings(customer_id)
+        if not consolidated:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "confidence_level": confidence_level,
+                "time_horizon_days": time_horizon_days,
+                "value_at_risk_var": 0.0,
+                "expected_shortfall_cvar": 0.0,
+                "cvar_percentage": 0.0,
+                "tail_risk_rating": "Uninvested"
+            }
+
+        total_val = sum(pos["current_value"] for pos in consolidated.values())
+        if total_val <= 0:
+            return {
+                "customer_id": customer_id,
+                "total_portfolio_value": 0.0,
+                "confidence_level": confidence_level,
+                "time_horizon_days": time_horizon_days,
+                "value_at_risk_var": 0.0,
+                "expected_shortfall_cvar": 0.0,
+                "cvar_percentage": 0.0,
+                "tail_risk_rating": "Zero Valuation"
+            }
+
+        beta_info = self.calculate_portfolio_beta_estimate(customer_id)
+        portfolio_beta = beta_info.get("portfolio_beta", 1.0)
+        daily_sigma = 0.012 * portfolio_beta * math.sqrt(max(1, time_horizon_days))
+
+        # Statistical parameters for normal tail distribution
+        if confidence_level >= 0.99:
+            z_score = 2.326
+            es_factor = 2.665
+        elif confidence_level >= 0.95:
+            z_score = 1.645
+            es_factor = 2.063
+        else:
+            z_score = 1.282
+            es_factor = 1.755
+
+        var_amount = round(total_val * z_score * daily_sigma, 2)
+        cvar_amount = round(total_val * es_factor * daily_sigma, 2)
+        cvar_pct = round((cvar_amount / total_val) * 100.0, 2)
+
+        if cvar_pct <= 2.5:
+            rating = "Low Tail Risk / High Cushion"
+        elif cvar_pct <= 5.0:
+            rating = "Moderate Tail Risk / Standard Volatility"
+        else:
+            rating = "Elevated Tail Risk / High Tail Vulnerability"
+
+        return {
+            "customer_id": customer_id,
+            "total_portfolio_value": round(total_val, 2),
+            "confidence_level": confidence_level,
+            "time_horizon_days": time_horizon_days,
+            "value_at_risk_var": var_amount,
+            "expected_shortfall_cvar": cvar_amount,
+            "cvar_percentage": cvar_pct,
+            "tail_risk_rating": rating
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
