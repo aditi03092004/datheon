@@ -2118,6 +2118,98 @@ class StockPortfolioManager:
             "sectors_present": sectors
         }
 
+    def simulate_dollar_cost_averaging(
+        self,
+        ticker: str,
+        monthly_investment: float,
+        months: int = 12,
+        annualized_growth_pct: float = 8.0,
+        annualized_volatility_pct: float = 18.0
+    ) -> Dict[str, Any]:
+        """
+        Simulate a systematic Dollar-Cost Averaging (DCA) recurring accumulation strategy.
+
+        Models periodic share purchases over time under deterministic volatility cycles,
+        calculating average acquired cost per share and comparing outcomes to lump-sum allocation.
+
+        Args:
+            ticker (str): S&P 500 stock symbol.
+            monthly_investment (float): Fixed capital allocated per month.
+            months (int): Duration of recurring investment horizon in months (default: 12).
+            annualized_growth_pct (float): Projected annualized equity return trend (default: 8.0%).
+            annualized_volatility_pct (float): Annualized price volatility benchmark (default: 18.0%).
+
+        Returns:
+            Dict[str, Any]: Detailed recurring accumulation telemetry, schedule, and lump-sum comparison.
+
+        Raises:
+            InvalidTransactionError: If monthly_investment <= 0 or months < 1.
+            InvalidTickerError: If ticker is not recognized in dataset.
+        """
+        import math
+        t_clean = ticker.strip().upper()
+        info = self.validate_ticker(t_clean)
+        if not info:
+            raise InvalidTickerError(f"Ticker '{t_clean}' is not recognized in dataset.")
+        if monthly_investment <= 0:
+            raise InvalidTransactionError("Monthly investment must be greater than zero.")
+        if months < 1:
+            raise InvalidTransactionError("Accumulation horizon must be at least 1 month.")
+
+        base_price, _ = self.market_service.get_current_price(t_clean)
+        if base_price <= 0:
+            base_price = 100.0
+
+        monthly_mu = (annualized_growth_pct / 100.0) / 12.0
+        monthly_sigma = (annualized_volatility_pct / 100.0) / math.sqrt(12.0)
+
+        schedule: List[Dict[str, Any]] = []
+        cumulative_shares = 0.0
+
+        for m in range(1, months + 1):
+            drift = monthly_mu * m
+            cycle = 0.5 * monthly_sigma * math.sin(m)
+            p_m = round(max(5.0, base_price * (1.0 + drift + cycle)), 2)
+            shares_bought = monthly_investment / p_m
+            cumulative_shares += shares_bought
+
+            schedule.append({
+                "month": m,
+                "price": p_m,
+                "allocated": monthly_investment,
+                "shares_acquired": round(shares_bought, 4),
+                "cumulative_shares": round(cumulative_shares, 4)
+            })
+
+        total_inv = round(monthly_investment * months, 2)
+        total_shares = round(cumulative_shares, 4)
+        avg_cost = round(total_inv / total_shares, 2) if total_shares > 0 else base_price
+        ending_p = schedule[-1]["price"]
+        ending_val = round(total_shares * ending_p, 2)
+        net_pl = round(ending_val - total_inv, 2)
+        ret_pct = round((net_pl / total_inv) * 100.0, 2) if total_inv > 0 else 0.0
+
+        # Lump sum comparison
+        lump_shares = total_inv / base_price
+        lump_ending_val = round(lump_shares * ending_p, 2)
+        lump_ret_pct = round(((lump_ending_val - total_inv) / total_inv) * 100.0, 2) if total_inv > 0 else 0.0
+
+        return {
+            "ticker": t_clean,
+            "company_name": info.get("name", t_clean),
+            "monthly_investment": round(monthly_investment, 2),
+            "months_simulated": months,
+            "total_invested": total_inv,
+            "total_shares_acquired": total_shares,
+            "average_cost_per_share": avg_cost,
+            "ending_market_price": ending_p,
+            "ending_valuation": ending_val,
+            "net_profit_loss": net_pl,
+            "return_percentage": ret_pct,
+            "lump_sum_return_pct": lump_ret_pct,
+            "schedule": schedule
+        }
+
 
 # -----------------------------------------------------------------------------
 # Terminal UI and Presentation Helpers
