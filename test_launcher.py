@@ -112,6 +112,16 @@ class TestLauncherConfiguration(unittest.TestCase):
         self.assertTrue(rep["task2_has_required_headers"])
         self.assertGreater(rep["task2_company_count"], 0)
 
+    def test_generate_project_digest(self):
+        """Verify project digest computes lines of code, suite version, and standard library status."""
+        from run_project import generate_project_digest
+        digest = generate_project_digest()
+        self.assertIsInstance(digest, dict)
+        self.assertIn("suite_version", digest)
+        self.assertGreater(digest["total_lines_of_code"], 3000)
+        self.assertGreater(digest["test_suite_lines"], 1000)
+        self.assertTrue(digest["offline_standard_library_compliance"])
+
 
 if __name__ == "__main__":
     unittest.main()
