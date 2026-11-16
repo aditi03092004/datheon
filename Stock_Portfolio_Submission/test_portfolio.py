@@ -809,6 +809,30 @@ class TestStockPortfolioTracker(unittest.TestCase):
         aligned_reb = self.manager.calculate_rebalancing_recommendations(cid, target_sector_weights=custom_targets)
         self.assertTrue(aligned_reb["is_balanced"])
 
+    def test_calculate_expected_shortfall_cvar(self):
+        """Verify Conditional Value at Risk (Expected Shortfall) calculation and tail risk axioms."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty portfolio
+        empty_cvar = self.manager.calculate_expected_shortfall_cvar(cid)
+        self.assertEqual(empty_cvar["total_portfolio_value"], 0.0)
+        self.assertEqual(empty_cvar["expected_shortfall_cvar"], 0.0)
+        self.assertEqual(empty_cvar["tail_risk_rating"], "Uninvested")
+
+        # 2. Add position and evaluate 95% vs 99% confidence
+        self.manager.record_transaction(cid, "AAPL", 150.0, 10)
+        cvar_95 = self.manager.calculate_expected_shortfall_cvar(cid, confidence_level=0.95, time_horizon_days=1)
+        self.assertGreater(cvar_95["total_portfolio_value"], 0.0)
+        self.assertGreater(cvar_95["value_at_risk_var"], 0.0)
+        self.assertGreater(cvar_95["expected_shortfall_cvar"], cvar_95["value_at_risk_var"])  # CVaR > VaR axiom
+
+        cvar_99 = self.manager.calculate_expected_shortfall_cvar(cid, confidence_level=0.99, time_horizon_days=1)
+        self.assertGreater(cvar_99["expected_shortfall_cvar"], cvar_95["expected_shortfall_cvar"])
+
+        # 3. Time horizon scaling (5 days > 1 day)
+        cvar_5d = self.manager.calculate_expected_shortfall_cvar(cid, confidence_level=0.95, time_horizon_days=5)
+        self.assertGreater(cvar_5d["expected_shortfall_cvar"], cvar_95["expected_shortfall_cvar"])
+        self.assertIn("Tail Risk", cvar_95["tail_risk_rating"])
+
 
 if __name__ == "__main__":
     unittest.main()
