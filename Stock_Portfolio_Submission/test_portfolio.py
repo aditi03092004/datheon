@@ -833,6 +833,30 @@ class TestStockPortfolioTracker(unittest.TestCase):
         self.assertGreater(cvar_5d["expected_shortfall_cvar"], cvar_95["expected_shortfall_cvar"])
         self.assertIn("Tail Risk", cvar_95["tail_risk_rating"])
 
+    def test_calculate_portfolio_diversification_ratio(self):
+        """Verify Choueifaty Diversification Ratio calculation and cross-sector hedging benefits."""
+        cid = self.manager.generate_customer_id()
+        # 1. Empty portfolio
+        empty_dr = self.manager.calculate_portfolio_diversification_ratio(cid)
+        self.assertEqual(empty_dr["diversification_ratio"], 1.0)
+        self.assertEqual(empty_dr["diversification_rating"], "Uninvested")
+
+        # 2. Single stock: DR is exactly 1.0 (zero diversification)
+        self.manager.record_transaction(cid, "AAPL", 150.0, 5)
+        single_dr = self.manager.calculate_portfolio_diversification_ratio(cid)
+        self.assertEqual(single_dr["diversification_ratio"], 1.0)
+        self.assertEqual(single_dr["diversification_rating"], "Concentrated / Low Diversification Benefit")
+
+        # 3. Add non-correlated sector (Utilities - NEE)
+        self.manager.record_transaction(cid, "NEE", 75.0, 10)
+        hedged_dr = self.manager.calculate_portfolio_diversification_ratio(cid)
+        self.assertGreater(hedged_dr["diversification_ratio"], 1.0)  # Diversification benefit achieved
+        self.assertLess(hedged_dr["portfolio_volatility_pct"], hedged_dr["weighted_asset_volatility_pct"])
+        self.assertIn(hedged_dr["diversification_rating"], [
+            "Highly Diversified / Optimal Cross-Sector Hedge",
+            "Moderately Diversified / Balanced Allocation"
+        ])
+
 
 if __name__ == "__main__":
     unittest.main()
