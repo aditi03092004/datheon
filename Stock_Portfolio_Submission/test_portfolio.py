@@ -857,6 +857,29 @@ class TestStockPortfolioTracker(unittest.TestCase):
             "Moderately Diversified / Balanced Allocation"
         ])
 
+    def test_simulate_dollar_cost_averaging(self):
+        """Verify recurring Dollar-Cost Averaging accumulation schedule, average cost, and comparison."""
+        from portfolio import InvalidTransactionError, InvalidTickerError
+        # 1. Invalid parameters
+        with self.assertRaises(InvalidTransactionError):
+            self.manager.simulate_dollar_cost_averaging("AAPL", monthly_investment=-100.0, months=12)
+        with self.assertRaises(InvalidTickerError):
+            self.manager.simulate_dollar_cost_averaging("INVALID_TICKER_999", monthly_investment=200.0, months=12)
+        with self.assertRaises(InvalidTransactionError):
+            self.manager.simulate_dollar_cost_averaging("AAPL", monthly_investment=200.0, months=0)
+
+        # 2. Valid 12-month DCA simulation
+        res = self.manager.simulate_dollar_cost_averaging("AAPL", monthly_investment=500.0, months=12)
+        self.assertEqual(res["ticker"], "AAPL")
+        self.assertEqual(res["months_simulated"], 12)
+        self.assertEqual(res["total_invested"], 6000.0)
+        self.assertEqual(len(res["schedule"]), 12)
+        self.assertGreater(res["total_shares_acquired"], 0.0)
+        self.assertGreater(res["average_cost_per_share"], 0.0)
+        self.assertGreater(res["ending_valuation"], 0.0)
+        self.assertIsInstance(res["return_percentage"], float)
+        self.assertIsInstance(res["lump_sum_return_pct"], float)
+
 
 if __name__ == "__main__":
     unittest.main()
