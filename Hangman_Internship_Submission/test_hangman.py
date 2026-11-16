@@ -33,6 +33,7 @@ from hangman import (
     find_pattern_matches,
     generate_letter_distribution_histogram,
     load_words,
+    predict_word_guessability_score,
 )
 
 
@@ -967,6 +968,35 @@ class TestFrequencyDistributionAnalytics(unittest.TestCase):
         game = HangmanGame(secret_word="assessment")
         self.assertIn("s", game.frequency_quartiles["Q4_dominant"])
         self.assertEqual(game.letter_histogram["frequencies"]["s"], 4)
+
+
+class TestWordGuessabilityPredictor(unittest.TestCase):
+    """Tests machine-learning-style word guessability and difficulty heuristics."""
+
+    def test_easy_guessable_word(self):
+        """Verify repetitive vowel-rich words achieve high guessability score."""
+        res = predict_word_guessability_score("banana")
+        self.assertGreaterEqual(res["guessability_score"], 70.0)
+        self.assertIn("Easy", res["guessability_tier"])
+        self.assertEqual(len(res["risk_factors"]), 0)
+
+    def test_cryptic_word_resistance(self):
+        """Verify words with vowel scarcity and rare letters register risk factors."""
+        res = predict_word_guessability_score("rhythm")
+        self.assertLessEqual(res["guessability_score"], 40.0)
+        self.assertIn("Severe vowel scarcity", res["risk_factors"])
+
+    def test_invalid_inputs(self):
+        """Verify invalid or empty strings return zeroed default profile."""
+        res = predict_word_guessability_score("")
+        self.assertEqual(res["guessability_score"], 0.0)
+        self.assertEqual(res["guessability_tier"], "Invalid")
+
+    def test_game_guessability_properties(self):
+        """Verify HangmanGame exposes guessability_profile and guessability_score."""
+        game = HangmanGame(secret_word="apple")
+        self.assertGreater(game.guessability_score, 50.0)
+        self.assertIn("guessability_tier", game.guessability_profile)
 
 
 if __name__ == "__main__":
