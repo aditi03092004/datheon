@@ -36,6 +36,7 @@ from hangman import (
     generate_letter_distribution_histogram,
     load_words,
     predict_word_guessability_score,
+    recommend_optimal_guess,
 )
 
 
@@ -1033,6 +1034,33 @@ class TestPositionalLetterDistribution(unittest.TestCase):
         game = HangmanGame(secret_word="galaxy")
         self.assertEqual(game.positional_signature["first_letter"], "g")
         self.assertEqual(game.positional_signature["last_letter"], "y")
+
+
+class TestOptimalGuessRecommendation(unittest.TestCase):
+    """Tests optimal letter guess recommendation based on pattern coverage."""
+
+    def test_recommend_optimal_guess_with_matches(self):
+        """Verify optimal guess selects highest coverage character among candidate matches."""
+        pool = ["apple", "apply", "ample"]
+        res = recommend_optimal_guess("a p p _ _", {"a", "p"}, pool)
+        self.assertEqual(res["recommended_letter"], "l")
+        self.assertEqual(res["candidate_matches_count"], 2)  # apple and apply match 'a p p _ _'
+        self.assertFalse(res["fallback_used"])
+
+    def test_fallback_when_no_candidates(self):
+        """Verify fallback letter is suggested when dictionary yields zero pattern matches."""
+        pool = ["cat", "dog"]
+        res = recommend_optimal_guess("z z z _ _", {"z"}, pool)
+        self.assertTrue(res["fallback_used"])
+        self.assertIn(res["recommended_letter"], "etaoin")
+
+    def test_game_recommend_next_guess_integration(self):
+        """Verify HangmanGame integration method returns valid recommendation."""
+        game = HangmanGame(secret_word="cat")
+        game.process_guess("c")
+        pool = ["cat", "car", "can"]
+        rec = game.recommend_next_guess(pool)
+        self.assertEqual(rec["recommended_letter"], "a")
 
 
 if __name__ == "__main__":

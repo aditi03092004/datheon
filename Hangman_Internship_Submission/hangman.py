@@ -1060,7 +1060,9 @@ def recommend_optimal_guess(
                         and fallback_used flag.
     """
     already_guessed = {c.lower() for c in guessed_letters if c.isalpha()}
-    matching_candidates = find_pattern_matches(masked_pattern, word_pool, excluded_letters=already_guessed)
+    revealed_in_pattern = {c.lower() for c in masked_pattern if c.isalpha()}
+    incorrect_guesses = already_guessed - revealed_in_pattern
+    matching_candidates = find_pattern_matches(masked_pattern, word_pool, excluded_letters=incorrect_guesses)
 
     if not matching_candidates:
         english_priority = "etaoinshrdlcumwfgypbvkjxqz"
