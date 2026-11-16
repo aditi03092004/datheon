@@ -1043,6 +1043,60 @@ def find_pattern_matches(
     return sorted(matches)
 
 
+def recommend_optimal_guess(
+    masked_pattern: str,
+    guessed_letters: set[str],
+    word_pool: list[str]
+) -> dict[str, Any]:
+    """
+    Determine the mathematically optimal next letter guess maximizing information gain.
+
+    Filters matching dictionary candidates conforming to the masked pattern, excludes
+    already guessed characters, and ranks letters by candidate occurrence coverage.
+
+    Returns:
+        dict[str, Any]: recommended_letter, candidate_matches_count, top_candidates,
+                        ranked_recommendations list of (letter, count, coverage_pct),
+                        and fallback_used flag.
+    """
+    already_guessed = {c.lower() for c in guessed_letters if c.isalpha()}
+    matching_candidates = find_pattern_matches(masked_pattern, word_pool, excluded_letters=already_guessed)
+
+    if not matching_candidates:
+        english_priority = "etaoinshrdlcumwfgypbvkjxqz"
+        fallback_letter = next((c for c in english_priority if c not in already_guessed), "e")
+        return {
+            "recommended_letter": fallback_letter,
+            "candidate_matches_count": 0,
+            "top_candidates": [],
+            "ranked_recommendations": [],
+            "fallback_used": True
+        }
+
+    total_matches = len(matching_candidates)
+    letter_presence: dict[str, int] = Counter()
+
+    for word in matching_candidates:
+        unique_chars = set(word.lower()) - already_guessed
+        for char in unique_chars:
+            letter_presence[char] += 1
+
+    ranked: list[tuple[str, int, float]] = []
+    for char, count in letter_presence.most_common():
+        cov_pct = round((count / total_matches) * 100.0, 1)
+        ranked.append((char, count, cov_pct))
+
+    best_letter = ranked[0][0] if ranked else "e"
+
+    return {
+        "recommended_letter": best_letter,
+        "candidate_matches_count": total_matches,
+        "top_candidates": matching_candidates[:5],
+        "ranked_recommendations": ranked,
+        "fallback_used": False
+    }
+
+
 def find_anagram_candidates(word: str, word_pool: list[str]) -> list[str]:
     """
     Find candidate words from the dictionary that are valid anagrams of the target word.
@@ -1217,6 +1271,10 @@ class HangmanGame:
     ) -> list[tuple[str, int]]:
         """Returns closest dictionary words to secret word by Levenshtein edit distance."""
         return find_closest_dictionary_words(self.secret_word, word_pool, max_distance, top_k)
+
+    def recommend_next_guess(self, word_pool: list[str]) -> dict[str, Any]:
+        """Recommends mathematically optimal next letter guess based on active pattern and pool."""
+        return recommend_optimal_guess(self.get_masked_word(), self.guessed_letters, word_pool)
 
     def get_sorted_guessed_letters(self) -> list[str]:
         """Returns a sorted list of all unique letters guessed so far."""
