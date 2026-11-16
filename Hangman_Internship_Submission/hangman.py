@@ -838,6 +838,90 @@ def generate_letter_distribution_histogram(
     }
 
 
+def predict_word_guessability_score(word: str) -> dict[str, Any]:
+    """
+    Predict human guessing difficulty resistance on a normalized 0-100 scale.
+
+    A higher score (e.g. >= 75) indicates high human guessability (frequent vowels,
+    common letters, repeating patterns), while a low score (e.g. <= 30) denotes
+    cryptic resistance (vowel scarcity, rare consonants, long distinct chains).
+
+    Returns:
+        dict[str, Any]: word, guessability_score (0.0-100.0), guessability_tier,
+                        risk_factors list, vowel_density, and unique_ratio.
+    """
+    cleaned = word.strip().lower()
+    if not cleaned or not cleaned.isalpha():
+        return {
+            "word": cleaned,
+            "guessability_score": 0.0,
+            "guessability_tier": "Invalid",
+            "risk_factors": ["Non-alphabetic or empty string"],
+            "vowel_density": 0.0,
+            "unique_ratio": 0.0
+        }
+
+    vowels = set("aeiou")
+    rare_chars = set("jqxzvk")
+    v_count = sum(1 for c in cleaned if c in vowels)
+    rare_count = sum(1 for c in cleaned if c in rare_chars)
+    unique_count = len(set(cleaned))
+    total_len = len(cleaned)
+
+    vowel_density = v_count / total_len
+    unique_ratio = unique_count / total_len
+
+    score = 50.0
+    risk_factors: list[str] = []
+
+    # Repetition bonus or distinct penalty
+    if unique_ratio <= 0.55:
+        score += 15.0
+    elif unique_ratio >= 0.85 and total_len >= 6:
+        score -= 15.0
+        risk_factors.append("High unique letter diversity")
+
+    # Vowel density evaluation
+    if vowel_density >= 0.40:
+        score += 15.0
+    elif vowel_density <= 0.20:
+        score -= 20.0
+        risk_factors.append("Severe vowel scarcity")
+
+    # Rare consonant penalty
+    if rare_count > 0:
+        score -= min(25.0, rare_count * 7.5)
+        if rare_count >= 2:
+            risk_factors.append("High concentration of rare consonants")
+
+    # Length modifiers
+    if total_len <= 4:
+        score += 10.0
+    elif total_len >= 9:
+        score -= 10.0
+        risk_factors.append("Extended word length")
+
+    final_score = round(max(5.0, min(95.0, score)), 1)
+
+    if final_score >= 75.0:
+        tier = "Easy / Highly Guessable"
+    elif final_score >= 50.0:
+        tier = "Moderate / Standard Guessability"
+    elif final_score >= 30.0:
+        tier = "Challenging / Low Guessability"
+    else:
+        tier = "Cryptic / Extreme Resistance"
+
+    return {
+        "word": cleaned,
+        "guessability_score": final_score,
+        "guessability_tier": tier,
+        "risk_factors": risk_factors,
+        "vowel_density": round(vowel_density, 2),
+        "unique_ratio": round(unique_ratio, 2)
+    }
+
+
 def find_pattern_matches(
     pattern: str,
     word_pool: list[str],
@@ -1025,6 +1109,16 @@ class HangmanGame:
     def frequency_quartiles(self) -> dict[str, list[str]]:
         """Returns categorized letter quartile distribution for the secret word."""
         return self.letter_histogram["quartiles"]
+
+    @property
+    def guessability_profile(self) -> dict[str, Any]:
+        """Returns human guessing difficulty and risk factor analysis for secret word."""
+        return predict_word_guessability_score(self.secret_word)
+
+    @property
+    def guessability_score(self) -> float:
+        """Returns the normalized human guessability score (0.0 - 100.0) of secret word."""
+        return self.guessability_profile["guessability_score"]
 
     def get_masked_word(self, placeholder: str = "_") -> str:
         """
