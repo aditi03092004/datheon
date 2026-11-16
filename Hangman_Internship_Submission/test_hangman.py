@@ -18,6 +18,8 @@ from hangman import (
     HangmanGame,
     HANGMAN_STAGES,
     analyze_word_affixes,
+    analyze_word_positional_signature,
+    calculate_positional_letter_distribution,
     calculate_word_complexity,
     calculate_vowel_consonant_metrics,
     calculate_letter_frequency_analysis,
@@ -997,6 +999,40 @@ class TestWordGuessabilityPredictor(unittest.TestCase):
         game = HangmanGame(secret_word="apple")
         self.assertGreater(game.guessability_score, 50.0)
         self.assertIn("guessability_tier", game.guessability_profile)
+
+
+class TestPositionalLetterDistribution(unittest.TestCase):
+    """Tests character position profiling, vowel anchors, and opening guess selection."""
+
+    def test_word_positional_signature(self):
+        """Verify extraction of initial, terminal, and internal vowel indices."""
+        sig = analyze_word_positional_signature("planet")
+        self.assertEqual(sig["first_letter"], "p")
+        self.assertEqual(sig["last_letter"], "t")
+        self.assertEqual(sig["vowel_positions"], [2, 4])  # a at index 2, e at index 4
+        self.assertEqual(sig["consonant_positions"], [0, 1, 3, 5])
+
+    def test_positional_distribution_pool(self):
+        """Verify letter counts across initial and terminal word positions."""
+        pool = ["cat", "car", "bat", "dog"]
+        dist = calculate_positional_letter_distribution(pool, target_length=3)
+        self.assertEqual(dist["total_words"], 4)
+        self.assertEqual(dist["first_letter_counts"]["c"], 2)
+        self.assertEqual(dist["last_letter_counts"]["t"], 2)
+        self.assertIn("a", dist["top_opening_guesses"])
+
+    def test_empty_pool_and_invalid_word(self):
+        """Verify safe handling of empty dictionary lists and non-alphabetic inputs."""
+        empty = calculate_positional_letter_distribution([])
+        self.assertEqual(empty["total_words"], 0)
+        invalid = analyze_word_positional_signature("")
+        self.assertIsNone(invalid["first_letter"])
+
+    def test_game_positional_signature_integration(self):
+        """Verify HangmanGame exposes positional_signature property."""
+        game = HangmanGame(secret_word="galaxy")
+        self.assertEqual(game.positional_signature["first_letter"], "g")
+        self.assertEqual(game.positional_signature["last_letter"], "y")
 
 
 if __name__ == "__main__":
